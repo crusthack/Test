@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { loadEnemiesById } from "@/lib/catLoader";
+import { loadEnemiesById } from "@/lib/catsLoader";
 import { loadAllEnemies } from "@/lib/enemyLoader";
 import type { unit } from "@/types/cat";
 
