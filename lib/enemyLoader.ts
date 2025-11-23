@@ -1,225 +1,218 @@
+// lib/enemyLoader.ts
 import * as fs from "fs";
 import * as path from "path";
 
 import { unit as Enemy, trait, affect, ability, attackType } from "@/types/cat";
 
-// ──────────────────────────────────────────────
+// -------------------------------------------------------------
 // 파일 경로
-// ──────────────────────────────────────────────
-const ENEMY_CSV = "./data/t_unit.csv";
-const ENEMY_NAME_FILE = "./data/EnemyName.txt";
-const ENEMY_DESC_FILE = "./data/EnemyExplanation.txt";
+// -------------------------------------------------------------
+const ENEMY_CSV = path.join(process.cwd(), "data/t_unit.csv");
+const ENEMY_NAME_FILE = path.join(process.cwd(), "data/EnemyName.txt");
+const ENEMY_DESC_FILE = path.join(process.cwd(), "data/EnemyExplanation.txt");
 
-// ──────────────────────────────────────────────
-// 이름 로드
-// EnemyName.txt
-// 형식:   000    멍뭉이
-//         001    낼름이
-//         002    놈놈놈
-// ...
-// ──────────────────────────────────────────────
+// -------------------------------------------------------------
+// 안전한 trim
+// -------------------------------------------------------------
+const safeTrim = (v: any) => (typeof v === "string" ? v.trim() : "");
+
+// -------------------------------------------------------------
+// EnemyName: 인덱스 +2 로 매칭
+// -------------------------------------------------------------
 function loadEnemyNames(): Map<number, string> {
-    const txt = fs.readFileSync(ENEMY_NAME_FILE, "utf8").replace(/\r/g, "");
-    const map = new Map<number, string>();
+  const raw = fs.readFileSync(ENEMY_NAME_FILE, "utf8").replace(/\r/g, "");
+  const map = new Map<number, string>();
 
-    const lines = txt
-        .split("\n")
-        .map(x => x.trim())
-        .filter(x => x.length > 0);
+  for (const line of raw.split("\n")) {
+    if (!line.includes("\t")) continue;
+    const [left, name] = line.split("\t");
 
-    for (const line of lines) {
-        const cols = line.split("\t");
-        if (cols.length < 2) continue;
+    const baseId = parseInt(safeTrim(left));
+    if (isNaN(baseId)) continue;
 
-        const id = parseInt(cols[0]);
-        const name = cols[1].trim();
-
-        map.set(id, name);
-    }
-    return map;
+    map.set(baseId + 2, safeTrim(name)); // ★ ID + 2 적용
+  }
+  return map;
 }
 
-// ──────────────────────────────────────────────
-// 설명 로드
-// EnemyExplanation.txt
-// 형식:   000   설명...
-//         001   설명...
-// ──────────────────────────────────────────────
+// -------------------------------------------------------------
+// EnemyExplanation: 인덱스 +2 로 매칭
+// -------------------------------------------------------------
 function loadEnemyDescriptions(): Map<number, string> {
-    const txt = fs.readFileSync(ENEMY_DESC_FILE, "utf8").replace(/\r/g, "");
-    const map = new Map<number, string>();
+  const raw = fs.readFileSync(ENEMY_DESC_FILE, "utf8").replace(/\r/g, "");
+  const map = new Map<number, string>();
 
-    const lines = txt
-        .split("\n")
-        .map(x => x.trim());
+  for (const line of raw.split("\n")) {
+    if (!line.includes("\t")) continue;
 
-    for (const line of lines) {
-        if (!line.includes("\t")) continue;
-        const [numStr, ...descParts] = line.split("\t");
+    const parts = line.split("\t");
+    const baseId = parseInt(safeTrim(parts[0]));
+    if (isNaN(baseId)) continue;
 
-        const id = parseInt(numStr);
-        const desc = descParts.join("\t").trim();
-
-        map.set(id, desc);
-    }
-
-    return map;
+    const desc = safeTrim(parts.slice(1).join("\t"));
+    map.set(baseId + 2, desc); // ★ ID + 2 적용
+  }
+  return map;
 }
 
-// ──────────────────────────────────────────────
-// trait/affect/ability/attackType logic
-// (unit과 동일하게 사용)
-// ──────────────────────────────────────────────
-
+// -------------------------------------------------------------
+// trait → cat 기준으로만 매칭
+// -------------------------------------------------------------
 const traitMap: Record<number, trait> = {
-    10: "Red",
-    16: "Floating",
-    17: "Black",
-    18: "Metal",
-    19: "White",
-    20: "Angel",
-    21: "Alien",
-    22: "Zombie",
-    78: "Relic",
-    96: "Demon",
+  10: "Red",
+  13: "Floating",
+  14: "Black",
+  15: "Metal",
+  16: "White",
+  17: "Angel",
+  18: "Alien",
+  19: "Zombie",
+  // ---------------------------------------------------------
+  // ⭐ 적 전용 trait (표시 X, 너가 나중에 정리용)
+  // 48: Witch
+  // 49: Base 
+  // 71: EVA
+  // 72: Relic (아군과 동일)
+  // 93: Demon (아군과 동일)
+  // 94: Baron
+  // 101: Beast
+  // 104: Sage
+  // ---------------------------------------------------------
 };
 
-function getEnemyAffects(values: number[]): affect[] {
-    const out: affect[] = [];
-    const add = (cond: boolean, name: affect) => { if (cond) out.push(name); };
+// -------------------------------------------------------------
+// affect (cat 기준만 사용)
+// -------------------------------------------------------------
+function getEnemyAffects(v: number[]): affect[] {
+  const out: affect[] = [];
+  const add = (c: boolean, a: affect) => c && out.push(a);
 
-    add(values[27] > 0, "Slow");
-    add(values[25] > 0, "Stop");
-    add(values[24] > 0, "Knockback");
-    add(values[37] > 0, "Weak");
-    add(values[30] > 0, "MassiveDamage");
-    add(values[81] > 0, "InsaneDamage");
-    add(values[23] > 0, "Good");
-    add(values[29] > 0, "Resistant");
-    add(values[80] > 0, "InsanelyTough");
-    add(values[92] > 0, "Curse");
-    add(values[32] > 0, "Only");
-    add(values[75] > 0, "Warp");
-    add(values[84] > 0, "ImuATK");
+  add(v[27] > 0, "Slow");
+  add(v[25] > 0, "Stop");
+  add(v[24] > 0, "Knockback");
+  add(v[37] > 0, "Weak");
+  add(v[30] > 0, "MassiveDamage");
+  add(v[81] > 0, "InsaneDamage");
+  add(v[23] > 0, "Good");
+  add(v[29] > 0, "Resistant");
+  add(v[80] > 0, "InsanelyTough");
+  add(v[92] > 0, "Curse");
+  add(v[32] > 0, "Only");
+  add(v[75] > 0, "Warp");
+  add(v[84] > 0, "ImuATK");
 
-    return out;
+  return out;
 }
 
-function getEnemyAbilities(values: number[]): ability[] {
-    const out: ability[] = [];
-    const add = (cond: boolean, name: ability) => { if (cond) out.push(name); };
+// -------------------------------------------------------------
+// ability (cat 기준만 사용)
+// -------------------------------------------------------------
+function getEnemyAbilities(v: number[]): ability[] {
+  const out: ability[] = [];
+  const add = (c: boolean, a: ability) => c && out.push(a);
 
-    add(values[40] > 0, "AtkUp");
-    add(values[42] > 0, "LETHAL");
-    add(values[34] > 0, "BaseDestroyer");
-    add(values[31] > 0, "Critical");
-    add(values[112] > 0, "MetalKiller");
-    add(values[52] > 0, "ZombieKiller");
-    add(values[98] > 0, "SoulStrike");
-    add(values[70] > 0, "BarrierBreak");
-    add(values[95] > 0, "ShieldBreak");
-    add(values[82] > 0, "StrickAttack");
-    add(values[33] > 0, "Bounty");
-    add(values[43] > 0, "Metallic");
+  add(v[40] > 0, "AtkUp");
+  add(v[42] > 0, "LETHAL");
+  add(v[34] > 0, "BaseDestroyer");
+  add(v[31] > 0, "Critical");
+  add(v[112] > 0, "MetalKiller");
+  add(v[52] > 0, "ZombieKiller");
+  add(v[98] > 0, "SoulStrike");
+  add(v[70] > 0, "BarrierBreak");
+  add(v[95] > 0, "ShieldBreak");
+  add(v[82] > 0, "StrickAttack");
+  add(v[33] > 0, "Bounty");
+  add(v[43] > 0, "Metallic");
+  add(v[94] > 0, "MiniWave");
+  add(v[35] > 0 && v[94] === 0, "Wave");
+  add(v[108] > 0, "MiniVolcano");
+  add(v[86] > 0 && v[108] === 0, "Volcano");
+  add(v[109] > 0, "VolcanoCounter");
+  add(v[113] > 0, "Blast");
+  add(v[47] > 0, "WaveBlocker");
+  add(v[110] > 0, "Summon");
+  add(v[97] > 0, "ColosusSlayer");
+  add(v[105] > 0, "BehemothSlayer");
+  add(v[111] > 0, "SageHunter");
+  add(v[51] > 0, "ImuWeak");
+  add(v[48] > 0, "ImuKB");
+  add(v[49] > 0, "ImuStop");
+  add(v[50] > 0, "ImuSlow");
+  add(v[75] > 0, "ImuWarp");
+  add(v[79] > 0, "ImuCurse");
+  add(v[90] > 0, "ImuPoison");
+  add(v[46] > 0, "ImuWave");
+  add(v[91] > 0, "ImuVolcano");
+  add(v[116] > 0, "ImuBlast");
 
-    add(values[94] > 0, "MiniWave");
-    add(values[35] > 0 && values[94] === 0, "Wave");
-    add(values[108] > 0, "MiniVolcano");
-    add(values[86] > 0 && values[108] === 0, "Volcano");
-    add(values[109] > 0, "VolcanoCounter");
-    add(values[113] > 0, "Blast");
-    add(values[47] > 0, "WaveBlocker");
-
-    add(values[110] > 0, "Summon");
-
-    add(values[97] > 0, "ColosusSlayer");
-    add(values[105] > 0, "BehemothSlayer");
-    add(values[111] > 0, "SageHunter");
-
-    // 무효
-    add(values[51] > 0, "ImuWeak");
-    add(values[48] > 0, "ImuKB");
-    add(values[49] > 0, "ImuStop");
-    add(values[50] > 0, "ImuSlow");
-    add(values[75] > 0, "ImuWarp");
-    add(values[79] > 0, "ImuCurse");
-    add(values[90] > 0, "ImuPoison");
-    add(values[46] > 0, "ImuWave");
-    add(values[91] > 0, "ImuVolcano");
-    add(values[116] > 0, "ImuBlast");
-
-    return out;
+  return out;
 }
 
-function getEnemyAttackTypes(values: number[]): attackType[] {
-    const out: attackType[] = [];
-    if (values[12] === 1) out.push("range");
+// -------------------------------------------------------------
+// attackType (cat 기준 동일)
+// -------------------------------------------------------------
+function getEnemyAttackTypes(v: number[]): attackType[] {
+  const out: attackType[] = [];
 
-    const ldr = values[45];
-    if (ldr !== 0) out.push(ldr < 0 ? "omni" : "long");
+  if (v[11] === 1) out.push("range");
 
-    if (out.length === 0) out.push("single");
+  const ldr = v[36];
+  if (ldr !== 0) out.push(ldr < 0 ? "omni" : "long");
 
-    return out;
+  if (out.length === 0) out.push("single");
+
+  return out;
 }
 
-// ──────────────────────────────────────────────
-// CSV 전체 로드
-// Enemy는 t_unit.csv 한 파일에 줄로 모두 존재
-// ──────────────────────────────────────────────
+// -------------------------------------------------------------
+// 메인 enemy 파서
+// -------------------------------------------------------------
 export function loadAllEnemies(): Enemy[] {
-    const nameMap = loadEnemyNames();
-    const descMap = loadEnemyDescriptions();
+  const names = loadEnemyNames();
+  const descs = loadEnemyDescriptions();
 
-    const lines = fs
-        .readFileSync(ENEMY_CSV, "utf8")
-        .replace(/\r/g, "")
-        .split("\n")
-        .filter(l => l.trim().length > 0);
+  const raw = fs.readFileSync(ENEMY_CSV, "utf8").replace(/\r/g, "");
+  const lines = raw.split("\n").filter((l) => safeTrim(l).length > 0);
 
-    const enemies: Enemy[] = [];
+  const out: Enemy[] = [];
 
-    for (let id = 0; id < lines.length; id++) {
-        const line = lines[id];
-        const pure = line.split("//")[0].trim();
-        const values = pure.split(",").map(v => parseInt(v.trim()));
+  for (let row = 0; row < lines.length; row++) {
+    const pure = safeTrim(lines[row].split("//")[0]);
+    const v = pure.split(",").map((x) => parseInt(safeTrim(x)) || 0);
 
-        while (values.length < 120) values.push(0);
+    while (v.length < 120) v.push(0);
 
-        const name = nameMap.get(id) ?? `Enemy ${id}`;
-        const description = descMap.get(id) ?? "";
+    const id = row + 2;
 
-        const traits: trait[] = [];
-        for (const key in traitMap) {
-            const idx = parseInt(key);
-            if (values[idx] === 1) traits.push(traitMap[idx]);
-        }
+    out.push({
+      Id: id,
+      Name: names.get(id) ?? `Enemy ${id}`,
+      Descriptiont: descs.get(id) ?? "",
+      Form: 0,
+      Image: null,
+      Rarity: "unknown",
 
-        enemies.push({
-            Id: id,
-            Name: name,
-            Form: 0,
-            Descriptiont: description,
-            Image: null,
-            Rarity: "unknown",
+      Targets: Object.keys(traitMap)
+        .map((k) => parseInt(k))
+        .filter((idx) => v[idx] === 1)
+        .map((idx) => traitMap[idx]),
 
-            Targets: traits,
-            AttackType: getEnemyAttackTypes(values),
-            Affects: getEnemyAffects(values),
-            Abilities: getEnemyAbilities(values),
+      AttackType: getEnemyAttackTypes(v),
+      Affects: getEnemyAffects(v),
+      Abilities: getEnemyAbilities(v),
 
-            Price: values[6],
-            Hp: values[0],
-            Atk: values[3],
-            Speed: values[2],
-            Heatback: values[1],
-            Tba: values[4] * 2,
-            PreAttackframe: values[13],
-            RespawnHalf: values[7] * 2,
-            Range: values[5],
-            Width: values[9],
-        });
-    }
+      Hp: v[0],
+      Heatback: v[1],
+      Speed: v[2],
+      Atk: v[3],
+      Tba: v[4] * 2,
+      Range: v[5],
+      Price: v[6],
+      Width: v[8],
+      PreAttackframe: v[12],
+      RespawnHalf: 0, // 적에게 없는 값
+    });
+  }
 
-    return enemies;
+  return out;
 }
