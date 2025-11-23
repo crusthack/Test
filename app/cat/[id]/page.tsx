@@ -1,9 +1,17 @@
 import { notFound } from "next/navigation";
 import { loadCatsById } from "@/lib/catsLoader";
 import Image from "next/image";
+import { loadAllCats } from "@/lib/loadcats";
 
 interface PageProps {
     params: Promise<{ id: string }>;
+}
+
+export function generateStaticParams() {
+    const cats = loadAllCats();
+  return cats.map(cat => ({
+    id: String(cat.Id),
+  }));
 }
 
 export default async function CatDetailPage({ params }: PageProps) {
