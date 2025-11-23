@@ -87,3 +87,38 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - 냥코대전쟁 데이터 - 아군 캐릭터 / 적 캐릭터 / 스테이지 정보... JSON으로 관리. (다 집어넣으면 30MB 넘길거같은데)
 - 모바일 테스크톱환경 CSS -> 일단 나중에 고려
 - Home, About, Dashboard, Search
+
+
+
+
+# 데이터 확보
+
+## bcu 
+
+- https://github.com/battlecatsultimate/bcu-assets/tree/master/lang
+- 언어별 캐릭터 이름, 적 이름, 스테이지 이름 등 정보
+- https://github.com/fieryhenry/BCData/tree/main/14.7.0kr/DataLocal
+- csv 데이터
+- https://github.com/battlecatsultimate/BCU_java_util_common/tree/a2e7ef4ed5aabede4ee7be9a046d477b790c122e/util
+- bcu 내부에서 사용하는 유틸리티 함수들(이걸 기반으로 csv 해석)
+
+## Battle Cats Wiki
+
+- https://battle-cats.fandom.com/wiki/Module:CatStatsUtils
+- 캐릭터 스탯 파싱 정보
+- https://battle-cats.fandom.com/wiki/MediaWiki:Custom-DataSource/cat_stats_form_1.json
+- 캐릭터 스탯 정보
+- https://battle-cats.fandom.com/wiki/Cat_Units
+- https://battle-cats.fandom.com/wiki/Module:Cats/names.csv
+- https://battle-cats.fandom.com/wiki/Module:Cats/data
+- https://battle-cats.fandom.com/wiki/Module:Cats/data
+- https://battle-cats.fandom.com/wiki/Module:Enemies.csv
+- 적 캐릭터 정보
+
+## Battle Cats DB
+- https://battlecats-db.com/
+- 일본어라 보기 힘듦
+
+## my gamatoto
+- https://mygamatoto.com/allcats
+- 크롤링해서 쓸거면 이거

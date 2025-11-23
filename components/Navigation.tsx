@@ -10,12 +10,11 @@ export default function Navigation() {
 
   const pages = [
     { id: "/", label: "홈", icon: Home },
-    { id: "/allies", label: "아군 캐릭터", icon: Cat },
-    { id: "/enemies", label: "적 캐릭터", icon: Dog },
+    { id: "/cat", label: "아군 캐릭터", icon: Cat },
+    { id: "/enemy", label: "적 캐릭터", icon: Dog },
     { id: "/stages", label: "스테이지", icon: Map },
     { id: "/mission", label: "월간 미션", icon: Calendar },
-    { id: "/docs", label: "API 문서", icon: FileText },
-    { id: "/health", label: "Health", icon: Activity },
+    { id: "/doc", label: "API 문서", icon: FileText },
   ];
 
   return (

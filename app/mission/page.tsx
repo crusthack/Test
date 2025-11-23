@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { enemies } from '@/data/mockData';
 import { stages } from '@/data/mockDataStages';
-import type { Stage, Enemy } from '@/types';
+import type { Stage, Enemy } from '@/types/common';
 
 interface Mission {
   id: number;

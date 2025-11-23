@@ -19,7 +19,7 @@ export default function Footer() {
             text-gray-600: 텍스트 중간 회색
             text-sm: 작은 텍스트
           */}
-          © 2025 냥코대전쟁 API. 모든 포켓몬 데이터는 교육 목적으로만 사용됩니다.
+          © 부산대학교 2025 웹응용프로그래밍 개인 프로젝트 페이지입니다.
         </p>
       </div>
     </footer>

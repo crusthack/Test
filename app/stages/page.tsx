@@ -10,7 +10,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { XIcon } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
 import { stages, enemies } from '@/data/mockData';
-import type { Stage, Enemy } from '@/types';
+import type { Stage, Enemy } from '@/types/common';
 
 export default function StagePage() {
   const [searchTerm, setSearchTerm] = useState('');

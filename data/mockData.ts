@@ -1,4 +1,4 @@
-import { Cat, Enemy, MonthlyMission } from '@/types';
+import { Cat, Enemy, MonthlyMission } from '@/types/common';
 import { stages } from '@/data/mockDataStages';
 
 export const allyCats: Cat[] = [
