@@ -14,10 +14,11 @@ const ENEMY_DESC_FILE = path.join(process.cwd(), "data/EnemyExplanation.txt");
 // -------------------------------------------------------------
 // 안전한 trim
 // -------------------------------------------------------------
-const safeTrim = (v: any) => (typeof v === "string" ? v.trim() : "");
+const safeTrim = (v: any) =>
+  typeof v === "string" ? v.trim() : "";
 
 // -------------------------------------------------------------
-// EnemyName: 인덱스 +2 로 매칭
+// EnemyName: 인덱스 +2 매칭
 // -------------------------------------------------------------
 function loadEnemyNames(): Map<number, string> {
   const raw = fs.readFileSync(ENEMY_NAME_FILE, "utf8").replace(/\r/g, "");
@@ -25,18 +26,18 @@ function loadEnemyNames(): Map<number, string> {
 
   for (const line of raw.split("\n")) {
     if (!line.includes("\t")) continue;
-    const [left, name] = line.split("\t");
 
+    const [left, name] = line.split("\t");
     const baseId = parseInt(safeTrim(left));
     if (isNaN(baseId)) continue;
 
-    map.set(baseId + 2, safeTrim(name)); // ★ ID + 2 적용
+    map.set(baseId + 2, safeTrim(name));
   }
   return map;
 }
 
 // -------------------------------------------------------------
-// EnemyExplanation: 인덱스 +2 로 매칭
+// EnemyExplanation: 인덱스 +2 매칭
 // -------------------------------------------------------------
 function loadEnemyDescriptions(): Map<number, string> {
   const raw = fs.readFileSync(ENEMY_DESC_FILE, "utf8").replace(/\r/g, "");
@@ -50,13 +51,13 @@ function loadEnemyDescriptions(): Map<number, string> {
     if (isNaN(baseId)) continue;
 
     const desc = safeTrim(parts.slice(1).join("\t"));
-    map.set(baseId + 2, desc); // ★ ID + 2 적용
+    map.set(baseId + 2, desc);
   }
   return map;
 }
 
 // -------------------------------------------------------------
-// trait → cat 기준으로만 매칭
+// trait: cat 기준 trait만 사용
 // -------------------------------------------------------------
 const traitMap: Record<number, trait> = {
   10: "Red",
@@ -67,21 +68,19 @@ const traitMap: Record<number, trait> = {
   17: "Angel",
   18: "Alien",
   19: "Zombie",
-  // ---------------------------------------------------------
-  // ⭐ 적 전용 trait (표시 X, 너가 나중에 정리용)
+  // --- Enemy only traits (표시 안 함) ---
   // 48: Witch
-  // 49: Base 
+  // 49: Base
   // 71: EVA
-  // 72: Relic (아군과 동일)
-  // 93: Demon (아군과 동일)
+  // 72: Relic
+  // 93: Demon
   // 94: Baron
   // 101: Beast
   // 104: Sage
-  // ---------------------------------------------------------
 };
 
 // -------------------------------------------------------------
-// affect (cat 기준만 사용)
+// affect
 // -------------------------------------------------------------
 function getEnemyAffects(v: number[]): affect[] {
   const out: affect[] = [];
@@ -105,7 +104,7 @@ function getEnemyAffects(v: number[]): affect[] {
 }
 
 // -------------------------------------------------------------
-// ability (cat 기준만 사용)
+// abilities
 // -------------------------------------------------------------
 function getEnemyAbilities(v: number[]): ability[] {
   const out: ability[] = [];
@@ -149,7 +148,7 @@ function getEnemyAbilities(v: number[]): ability[] {
 }
 
 // -------------------------------------------------------------
-// attackType (cat 기준 동일)
+// attackType
 // -------------------------------------------------------------
 function getEnemyAttackTypes(v: number[]): attackType[] {
   const out: attackType[] = [];
@@ -184,9 +183,13 @@ export function loadAllEnemies(): Enemy[] {
 
     const id = row + 2;
 
+    // 🔥 이름이 빈칸이면 건너뛰기
+    const name = names.get(id)?.trim() ?? "";
+    if (name.length === 0) continue;
+
     out.push({
       Id: id,
-      Name: names.get(id) ?? `Enemy ${id}`,
+      Name: name,
       Descriptiont: descs.get(id) ?? "",
       Form: 0,
       Image: null,
@@ -210,7 +213,7 @@ export function loadAllEnemies(): Enemy[] {
       Price: v[6],
       Width: v[8],
       PreAttackframe: v[12],
-      RespawnHalf: 0, // 적에게 없는 값
+      RespawnHalf: 0,
     });
   }
 
