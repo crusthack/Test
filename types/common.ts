@@ -1,22 +1,3 @@
-// export interface Cat {
-//   id: number;
-//   name: string;
-//   nameKo: string;
-//   rarity: 'Normal' | 'Special' | 'Rare' | 'Super Rare' | 'Uber Super Rare' | 'Legend Rare';
-//   hp: number;
-//   attack: number;
-//   range: number;
-//   speed: number;
-//   cost: number;
-//   recharge: number;
-//   abilities: string[];
-//   targetAttributes: ('all' | '빨간적' | '떠있는적' | '메탈적' | '무속성적' | '천사적' | '흑적' | '좀비적' | '에일리언적' | '없음')[];
-//   effects: ('느리게한다' | '멈추게한다' | '공격력다운' | '공격력업' | '없음')[];
-//   baseLevel?: number;
-//   hpPerLevel?: number;
-//   attackPerLevel?: number;
-// }
-
 export interface Enemy {
   id: number;
   name: string;
