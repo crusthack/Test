@@ -1,6 +1,6 @@
 export interface unit {
     Id: number,     // ID (고양이 = 0, 고양이벽 = 1, ...)
-    Form: number,   // 진화 단계 (1, 2, 3, 4)
+    Form: number,   // 진화 단계 (1, 2, 3, 4) 
     Rarity: string, // 등급    기본, Ex, 레어, 슈퍼레어, 울트라슈퍼레어, 레전드레어, undefined
     Name: string,   // 한글이름
     Descriptiont: string, // 한글설명
@@ -13,11 +13,10 @@ export interface unit {
     Heatback: number,   // 히드백 1
     Tba: number,        // 공격 간격 [4] * 2;
     PreAttackFrame: number,     // 선딜 애니메이션 프레임 13
-    postAttackFrame: number | null,    // 공격 후딜 애니메이션. 어떻게 구함??
+    postAttackFrame: number,    // 공격 후딜 애니메이션 프레임
     RespawnHalf: number,    // 재생산시간 [7] * 2
     Range: number,      // 공격범위 5
     Width: number,      // 유닛 길이 9
-    // dps: number,    // 공격력과 공격딜레이 기반으로 계산. 후딜이 안 구해져서 계산이 확정이 안 됨.
 
     Targets: trait[],        // 타겟 속성[]
     AttackType: attackType[],     // 공격 유형

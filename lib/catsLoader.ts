@@ -174,7 +174,7 @@ function loadRarity(id: number): string {
 
     const rarityMap: Record<number, string> = {
         0: "기본",
-        1: "EX",
+        1: "Ex",
         2: "레어",
         3: "슈퍼레어",
         4: "울트라슈퍼레어",

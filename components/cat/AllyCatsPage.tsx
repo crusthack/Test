@@ -30,12 +30,12 @@ export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
 
     const rarities = [
         { value: "all", label: "전체", color: "gray" },
-        { value: "Normal", label: "기본", color: "red" },
+        { value: "기본", label: "기본", color: "red" },
         { value: "Ex", label: "Ex", color: "orange" },
-        { value: "Rare", label: "레어", color: "yellow" },
-        { value: "Super Rare", label: "슈퍼레어", color: "green" },
-        { value: "Uber Super Rare", label: "울트라슈퍼레어", color: "blue" },
-        { value: "Legend Rare", label: "레전드레어", color: "purple" },
+        { value: "레어", label: "레어", color: "yellow" },
+        { value: "슈퍼레어", label: "슈퍼레어", color: "green" },
+        { value: "울트라슈퍼레어", label: "울트라슈퍼레어", color: "blue" },
+        { value: "레전드레어", label: "레전드레어", color: "purple" },
     ];
 
     const targets = [
