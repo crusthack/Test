@@ -1,4 +1,4 @@
-import { theme } from "@/types/enemy";
+import { theme } from "@/types/common";
 import { cn } from "./utils";
 import { Cat, Dog, Map, Calendar, FileText, Activity } from 'lucide-react';
 
