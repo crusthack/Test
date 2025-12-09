@@ -56,8 +56,9 @@ export default async function CatDetailPage({ params }: PageProps) {
                         attackF = cat.Tba + cat.PreAttackFrame - 1;
                     }
                     else attackF = cat.postAttackFrame + cat.PreAttackFrame;
+                    const attackSpeed = attackF / 30;
 
-                    const dps = cat.Atk * 60 / attackF;
+                    const dps = cat.Atk / attackSpeed;
                     return (
                         <div
                             key={idx}
@@ -123,10 +124,14 @@ export default async function CatDetailPage({ params }: PageProps) {
                                             <li>후딜F: {cat.postAttackFrame}</li>
 
                                             <li>공격빈도F: {attackF}</li>
-                                            <li>공격시간: {(attackF / 60).toFixed(2)}초</li>
+                                            <li>공격시간: {attackSpeed.toFixed(2)}초</li>
 
                                             <li>DPS: {dps.toFixed(2)}</li>
                                             <li>유닛길이: {cat.Width}</li>
+                                            <li>
+                                                최대 레벨: {cat.MaxLevel}
+                                                {cat.PlusLevel > 0 ? ` +${cat.PlusLevel}` : ""}
+                                            </li>
                                         </ul>
                                     </div>
 

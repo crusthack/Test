@@ -17,11 +17,15 @@ export interface unit {
     RespawnHalf: number,    // 재생산시간 [7] * 2
     Range: number,      // 공격범위 5
     Width: number,      // 유닛 길이 9
+    MaxLevel: number,   // 최대 기본 레벨
+    PlusLevel: number, // 최대 추가 레벨
 
     Targets: trait[],        // 타겟 속성[]
     AttackType: attackType[],     // 공격 유형
     Affects: affect[],        // 효과
     Abilities: ability[],      // 능력
+
+    levelData: number[]
 }
 
 export type trait =    // TB_

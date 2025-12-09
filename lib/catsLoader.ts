@@ -9,6 +9,7 @@ const UNIT_DIR = "./data/cat/unit";                     // 유닛 스탯
 const NAME_FILE = "./data/cat/UnitName.txt";            // 유닛 이름
 const DESC_FILE = "./data/cat/UnitExplanation.txt";     // 유닛 설명
 const RARE_FILE = "./data/cat/unitbuy.csv";             // 유닛 레어도
+const LV_FILE = "./data/cat/unitlevel.csv";             // 유닛 레벨 정보
 
 // ──────────────────────────────────────────────
 // 유닛 설명 로드
@@ -157,8 +158,10 @@ function getAttackTypes(values: number[]): attackType[] {
     return out;
 }
 
-function loadRarity(id: number): string {
-    if (!fs.existsSync(RARE_FILE)) return "undefined";
+function loadUnitBuy(id: number): { rarity: string, maxlevel: number, maxpluslevel: number } {
+    if (!fs.existsSync(RARE_FILE)) {
+        return { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
+    }
 
     const lines = fs
         .readFileSync(RARE_FILE, "utf8")
@@ -167,10 +170,12 @@ function loadRarity(id: number): string {
         .filter(l => l.trim().length > 0);
 
     const line = lines[id];
-    if (!line) return "undefined";
+    if (!line) {
+        return { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
+    }
 
     const values = line.split(",");
-    const code = Number(values[13]);  // 숫자로 변환
+    const code = Number(values[13]);
 
     const rarityMap: Record<number, string> = {
         0: "기본",
@@ -181,8 +186,26 @@ function loadRarity(id: number): string {
         5: "레전드레어",
     };
 
-    return rarityMap[code] ?? "undefined";
+    return {
+        rarity: rarityMap[code] ?? "undefined",
+        maxlevel: Number(values[50]) || 0,
+        maxpluslevel: Number(values[51]) || 0
+    };
 }
+
+function loadUnitLevelData(id:number): number[]{
+    if (!fs.existsSync(LV_FILE)) {
+        return [];
+    }
+    const lines = fs
+        .readFileSync(LV_FILE, "utf8")
+        .replace(/\r/g, "")
+        .split("\n")
+        .filter(l => l.trim().length > 0);
+    const line = lines[id];
+    return line.split(',').map((a)=>Number(a));
+}
+
 // 유닛 폴더, f 1진, c 2진, s 3진, u 4진
 function loadPostFRame(id: number, form: number, postFrame:number): number {
     if(!id || !form) return 0;
@@ -223,7 +246,7 @@ function loadPostFRame(id: number, form: number, postFrame:number): number {
 // CSV 하나 파싱
 // ──────────────────────────────────────────────
 function loadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): unit | null {
-    const rarity = loadRarity(num);
+    const {rarity, maxlevel, maxpluslevel} = loadUnitBuy(num);
 
     const dir = path.join(UNIT_DIR, num.toString().padStart(3, "0"));
     const csvPath = path.join(dir, `unit${num.toString().padStart(3, "0")}.csv`);
@@ -280,6 +303,10 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
         RespawnHalf: values[7] * 2,
         Range: values[5],
         Width: values[9],
+        MaxLevel: maxlevel,
+        PlusLevel: maxpluslevel,
+
+        levelData: loadUnitLevelData(num)
     };
 }
 

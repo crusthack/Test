@@ -34,13 +34,36 @@ export default function CatDetailDialog({
   getEffectColor,
 }: Props) {
   if (!selectedCat) return null;
+  if(currentLevel < 1) currentLevel = 1;
+  if(currentLevel > selectedCat.MaxLevel + selectedCat.PlusLevel) currentLevel = selectedCat.MaxLevel + selectedCat.PlusLevel;
 
+  const levelData = selectedCat.levelData;
   /* ------------------- 계산 ------------------- */
-  const baseLevel = 1;
-  const levelDiff = currentLevel - baseLevel;
+  const baseHp = selectedCat.Hp;
+  const baseAtk = selectedCat.Atk;
+  const zeroAtk = baseAtk - levelData[0] / 100 * selectedCat.Atk;
+  const zeroHp = baseHp - levelData[0] / 100 * selectedCat.Hp;
+  let remainLevel = currentLevel;
+  let calculatedHp = zeroHp; // CSV 기반: 레벨 보정 아직 없음
+  let calculatedAttack = zeroAtk;
+  let index = 0;
+  console.log('hello, world!!');
 
-  const calculatedHP = selectedCat.Hp; // CSV 기반: 레벨 보정 아직 없음
-  const calculatedAttack = selectedCat.Atk;
+  while (remainLevel) {
+    if (remainLevel < 10) {
+      calculatedAttack += levelData[index] / 100 * baseAtk * remainLevel;
+      calculatedHp += levelData[index] / 100 * baseHp * remainLevel;
+      break;
+    }
+    calculatedAttack += levelData[index] / 100 * baseAtk * 10;
+    calculatedHp += levelData[index] / 100 * baseHp * 10;
+    index++;
+    console.log(remainLevel);
+    remainLevel -= 10;
+  }
+  calculatedAttack = Math.round(calculatedAttack);
+  calculatedHp = Math.round(calculatedHp);
+
 
   /* ------------------- 한글 변환 ------------------- */
   const targetKo: Record<string, string> = {
@@ -162,7 +185,7 @@ export default function CatDetailDialog({
                   const v = parseInt(e.target.value);
                   if (!isNaN(v)) setCurrentLevel(Math.max(1, Math.min(999, v)));
                 }}
-                className="w-14 h-8 text-center"
+                className="w-20 h-8 text-center"
               />
 
               <button
@@ -233,7 +256,7 @@ export default function CatDetailDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-gray-600">HP</p>
-                <p className="text-red-600">{calculatedHP}</p>
+                <p className="text-red-600">{calculatedHp}</p>
               </div>
 
               <div className="bg-gray-50 p-3 rounded-lg">

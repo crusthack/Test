@@ -113,7 +113,7 @@ export default function CatsTable({
 
   return (
     <Card className="p-6">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto w-full min-w-0">
         <Table className="w-full table-fixed text-left">
           <TableHeader>
             <TableRow>
