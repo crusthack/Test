@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { cn } from "./utils";
-import { theme } from "@/types/common";
+import { theme } from "@/types/enemy";
 
 export interface CardProps {
   children: ReactNode; // 카드 안에 들어갈 내용

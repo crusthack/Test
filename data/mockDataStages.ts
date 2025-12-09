@@ -1,4 +1,4 @@
-import { Stage } from '@/types/common';
+import { Stage } from '@/types/enemy';
 
 export const stages: Stage[] = [
   // 세계편 - 1장

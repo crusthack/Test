@@ -3,9 +3,9 @@
 import { useState } from "react";
 import type { ability, unit as Cat } from "@/types/cat";
 
-import CatDetailDialog from "./CatDetailDialog";
-import CatsTable from "./CatsTable";
-import FiltersPanel from "./FiltersPanel";
+import CatDetailDialog from "@/components/cat/CatDetailDialog";
+import CatsTable from "@/components/cat/CatsTable";
+import FiltersPanel from "@/components/cat/FiltersPanel";
 
 export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
     const [searchTerm, setSearchTerm] = useState("");

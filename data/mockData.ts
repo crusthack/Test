@@ -1,4 +1,4 @@
-import { MonthlyMission } from '@/types/common';
+import { MonthlyMission } from '@/types/enemy';
 import { stages } from '@/data/mockDataStages';
 
 // stages는 ./mockDataStages.ts에서 import됨

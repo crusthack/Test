@@ -1,3 +1,30 @@
+export interface unit {
+    Id: number,     // ID (고양이 = 0, 고양이벽 = 1, ...)
+    Form: number,   // 진화 단계 (1, 2, 3, 4)
+    Rarity: string, // 등급    기본, Ex, 레어, 슈퍼레어, 울트라슈퍼레어, 레전드레어, undefined
+    Name: string,   // 한글이름
+    Descriptiont: string, // 한글설명
+    Image: string | null,   // 이미지 주소
+
+    Price: number,  // 생산비용 6
+    Hp: number,     // 체력 0
+    Atk: number,    // 공격력 3
+    Speed: number,  // 이동속도 2
+    Heatback: number,   // 히드백 1
+    Tba: number,        // 공격 간격 [4] * 2;
+    PreAttackframe: number,     // 선딜 애니메이션 프레임 13
+    // postAttackFrame: number,    // 공격 후딜 애니메이션. 어떻게 구함??
+    RespawnHalf: number,    // 재생산시간 [7] * 2
+    Range: number,      // 공격범위 5
+    Width: number,      // 유닛 길이 9
+    // dps: number,    // 공격력과 공격딜레이 기반으로 계산. 후딜이 안 구해져서 계산이 확정이 안 됨.
+
+    Targets: trait[],        // 타겟 속성[]
+    AttackType: attackType[],     // 공격 유형
+    Affects: affect[],        // 효과
+    Abilities: ability[],      // 능력
+}
+
 // 유닛 스탯 정보 -> org/unit/{03:d}/unit{03:d}.csv. csv 컬럼 최소 길이 52
 // 예시데이터 하데스 unit073.csv (4진까지 있음) 스탯 파싱 -> battle\data\dataunit.java
 // 950,1,7,450,15,410,2900,1450,0,320,0,0,1,82,0,9,0,1,0,0,0,0,0,0,0,100,180,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,-1,0,0,0,0,0,1,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -144,31 +171,6 @@ export type ability =
 // 원거리 공격 - [44]가 시작 범위, [45]가 공격범위 -> 사거리는 44 ~ 44 + 45
 // 전방위 공격 - [45]가 음수면 전방위, 
 
-export interface unit {
-    Id: number,     // ID
-    Name: string,   // 이름
-    Descriptiont: string, // 설명
-    Form: number,   // 진화 단계
-    Image: string | null,   // 이미지 주소
-    Rarity: string,         // 등급
-    Targets: trait[],        // 타겟 속성[]
-    AttackType: attackType[],     // 공격 유형
-    Affects: affect[],        // 효과
-    Abilities: ability[],      // 능력
-
-    Price: number,  // 생산비용 6
-    Hp: number,     // 체력 0
-    Atk: number,    // 공격력 3
-    // dps: number,    // 공격력과 공격딜레이 기반으로 계산. 후딜이 안 구해져서 계산이 확정이 안 됨.
-    Speed: number,  // 이동속도 2
-    Heatback: number,   // 히드백 1
-    Tba: number,        // 공격 간격 [4] * 2;
-    PreAttackframe: number,     // 선딜 애니메이션 프레임 13
-    // postAttackFrame: number,    // 공격 후딜 애니메이션. 어떻게 구함??
-    RespawnHalf: number,    // 재생산시간 [7] * 2
-    Range: number,      // 공격범위 5
-    Width: number,      // 유닛 길이 9
-}
 
 // walk, idle, attack, hitback 4가지 상태(애니메이션종류)가 있음. 02.maanim이 공격 애니메이션
 // 유닛 폴더, f 1진, c 2진, s 3진, u 4진

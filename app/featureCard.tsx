@@ -3,7 +3,7 @@ import Card from "@/components/ui/card";
 import { ArrowRight, Calendar } from "lucide-react";
 import Link from "next/link";
 import Icon from "@/components/ui/icon";
-import { theme } from "@/types/common";
+import { theme } from "@/types/enemy";
 
 interface FeatureCardProps {
     color?: theme; // 색

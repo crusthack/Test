@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { loadCatsById } from "@/lib/catsLoader";
+import { loadCatsById, loadAllCats } from "@/lib/catsLoader";
 import Image from "next/image";
-import { loadAllCats } from "@/lib/loadcats";
 
 interface PageProps {
     params: Promise<{ id: string }>;
