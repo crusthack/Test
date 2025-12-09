@@ -4,7 +4,7 @@ export interface unit {
     Rarity: string, // 등급    기본, Ex, 레어, 슈퍼레어, 울트라슈퍼레어, 레전드레어, undefined
     Name: string,   // 한글이름
     Descriptiont: string, // 한글설명
-    Image: string | null,   // 이미지 주소
+    Image: string,   // 이미지 주소
 
     Price: number,  // 생산비용 6
     Hp: number,     // 체력 0
@@ -12,8 +12,8 @@ export interface unit {
     Speed: number,  // 이동속도 2
     Heatback: number,   // 히드백 1
     Tba: number,        // 공격 간격 [4] * 2;
-    PreAttackframe: number,     // 선딜 애니메이션 프레임 13
-    // postAttackFrame: number,    // 공격 후딜 애니메이션. 어떻게 구함??
+    PreAttackFrame: number,     // 선딜 애니메이션 프레임 13
+    postAttackFrame: number | null,    // 공격 후딜 애니메이션. 어떻게 구함??
     RespawnHalf: number,    // 재생산시간 [7] * 2
     Range: number,      // 공격범위 5
     Width: number,      // 유닛 길이 9

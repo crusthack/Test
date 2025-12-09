@@ -73,70 +73,70 @@ export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
     ];
 
 
-const abilities = [
-    { group: "1", value: "all", label: "전체" },
-    { group: "1", value: "none", label: "없음" },
-    { group: "1", value: "AtkUp", label: "공격력 업" },
-    { group: "1", value: "LETHAL", label: "살아남는다" },
-    { group: "1", value: "BaseDestroyer", label: "성 파괴가 특기" },
+    const abilities = [
+        { group: "1", value: "all", label: "전체" },
+        { group: "1", value: "none", label: "없음" },
+        { group: "1", value: "AtkUp", label: "공격력 업" },
+        { group: "1", value: "LETHAL", label: "살아남는다" },
+        { group: "1", value: "BaseDestroyer", label: "성 파괴가 특기" },
 
-    { group: "2", value: "Critical", label: "크리티컬" },
-    { group: "2", value: "MetalKiller", label: "메탈 킬러" },
-    { group: "2", value: "ZombieKiller", label: "좀비 킬러" },
-    { group: "2", value: "SoulStrike", label: "영혼 공격" },
-    { group: "2", value: "BarrierBreak", label: "베리어 브레이커" },
-    { group: "2", value: "ShieldBreak", label: "쉴드 브레이커" },
-    { group: "2", value: "StrickAttack", label: "혼신의 일격" },
-    { group: "2", value: "Bounty", label: "격파시 머니 up" },
-    { group: "2", value: "Metallic", label: "메탈" },
+        { group: "2", value: "Critical", label: "크리티컬" },
+        { group: "2", value: "MetalKiller", label: "메탈 킬러" },
+        { group: "2", value: "ZombieKiller", label: "좀비 킬러" },
+        { group: "2", value: "SoulStrike", label: "영혼 공격" },
+        { group: "2", value: "BarrierBreak", label: "베리어 브레이커" },
+        { group: "2", value: "ShieldBreak", label: "쉴드 브레이커" },
+        { group: "2", value: "StrickAttack", label: "혼신의 일격" },
+        { group: "2", value: "Bounty", label: "격파시 머니 up" },
+        { group: "2", value: "Metallic", label: "메탈" },
 
-    { group: "3", value: "MiniWave", label: "소파동" },
-    { group: "3", value: "Wave", label: "파동 공격" },
-    { group: "3", value: "MiniVolcano", label: "소열파" },
-    { group: "3", value: "Volcano", label: "열파 공격" },
-    { group: "3", value: "VolcanoCounter", label: "열파 카운터" },
-    { group: "3", value: "Blast", label: "폭파 공격" },
-    { group: "3", value: "WaveBlocker", label: "파동스토퍼" },
-    { group: "3", value: "Summon", label: "소환" },
+        { group: "3", value: "MiniWave", label: "소파동" },
+        { group: "3", value: "Wave", label: "파동 공격" },
+        { group: "3", value: "MiniVolcano", label: "소열파" },
+        { group: "3", value: "Volcano", label: "열파 공격" },
+        { group: "3", value: "VolcanoCounter", label: "열파 카운터" },
+        { group: "3", value: "Blast", label: "폭파 공격" },
+        { group: "3", value: "WaveBlocker", label: "파동스토퍼" },
+        { group: "3", value: "Summon", label: "소환" },
 
-    { group: "3", value: "single", label: "개체공격" },
-    { group: "3", value: "aoe", label: "범위공격" },
-    { group: "3", value: "ld", label: "원거리공격" },
-    { group: "3", value: "omni", label: "전방위공격" },
+        { group: "3", value: "single", label: "개체공격" },
+        { group: "3", value: "aoe", label: "범위공격" },
+        { group: "3", value: "ld", label: "원거리공격" },
+        { group: "3", value: "omni", label: "전방위공격" },
 
-    { group: "4", value: "ColosusSlayer", label: "초생명체 특효" },
-    { group: "4", value: "BehemothSlayer", label: "초수 특효" },
-    { group: "4", value: "SageHunter", label: "초현자 특효" },
+        { group: "4", value: "ColosusSlayer", label: "초생명체 특효" },
+        { group: "4", value: "BehemothSlayer", label: "초수 특효" },
+        { group: "4", value: "SageHunter", label: "초현자 특효" },
 
-    { group: "5", value: "ImuWeak", label: "공격력 다운 무효" },
-    { group: "5", value: "ImuKB", label: "날려버린다 무효" },
-    { group: "5", value: "ImuStop", label: "움직임을 멈춘다 무효" },
-    { group: "5", value: "ImuSlow", label: "움직임을 느리게 한다 무효" },
-    { group: "5", value: "ImuWarp", label: "워프 무효" },
-    { group: "5", value: "ImuCurse", label: "고대의 저주 무효" },
-    { group: "5", value: "ImuPoison", label: "독 데미지 무효" },
-    { group: "5", value: "ImuWave", label: "파동 데미지 무효" },
-    { group: "5", value: "ImuVolcano", label: "열파 데미지 무효" },
-    { group: "5", value: "ImuBlast", label: "폭파 데미지 무효" },
+        { group: "5", value: "ImuWeak", label: "공격력 다운 무효" },
+        { group: "5", value: "ImuKB", label: "날려버린다 무효" },
+        { group: "5", value: "ImuStop", label: "움직임을 멈춘다 무효" },
+        { group: "5", value: "ImuSlow", label: "움직임을 느리게 한다 무효" },
+        { group: "5", value: "ImuWarp", label: "워프 무효" },
+        { group: "5", value: "ImuCurse", label: "고대의 저주 무효" },
+        { group: "5", value: "ImuPoison", label: "독 데미지 무효" },
+        { group: "5", value: "ImuWave", label: "파동 데미지 무효" },
+        { group: "5", value: "ImuVolcano", label: "열파 데미지 무효" },
+        { group: "5", value: "ImuBlast", label: "폭파 데미지 무효" },
 
-    { group: "6", value: "weaken_resist", label: "공격력 다운 저항" },
-    { group: "6", value: "stop_resist", label: "움직임을 멈춘다 저항" },
-    { group: "6", value: "slow_resist", label: "움직임을 느리게 한다 저항" },
-    { group: "6", value: "knockback_resist", label: "날려버린다 저항" },
-    { group: "6", value: "wave_resist", label: "파동 데미지 저항" },
-    { group: "6", value: "mini_wave_resist", label: "열파 데미지 저항" },
-    { group: "6", value: "warp_resist", label: "워프 저항" },
-    { group: "6", value: "curse_resist", label: "고대의 저주 저항" },
-    { group: "6", value: "poison_resist", label: "독 데미지 저항" },
+        { group: "6", value: "weaken_resist", label: "공격력 다운 저항" },
+        { group: "6", value: "stop_resist", label: "움직임을 멈춘다 저항" },
+        { group: "6", value: "slow_resist", label: "움직임을 느리게 한다 저항" },
+        { group: "6", value: "knockback_resist", label: "날려버린다 저항" },
+        { group: "6", value: "wave_resist", label: "파동 데미지 저항" },
+        { group: "6", value: "mini_wave_resist", label: "열파 데미지 저항" },
+        { group: "6", value: "warp_resist", label: "워프 저항" },
+        { group: "6", value: "curse_resist", label: "고대의 저주 저항" },
+        { group: "6", value: "poison_resist", label: "독 데미지 저항" },
 
-    { group: "7", value: "hp_up", label: "기본 체력 업" },
-    { group: "7", value: "atk_base_up", label: "기본 공격력 업" },
-    { group: "7", value: "speed_up", label: "이동 속도 업" },
-    { group: "7", value: "knockback_up", label: "넉백 횟수 증가" },
-    { group: "7", value: "cost_down", label: "생산 코스트 할인" },
-    { group: "7", value: "production_up", label: "생산 스피드 업" },
-    { group: "7", value: "tba_down", label: "공격 간격 단축" },
-];
+        { group: "7", value: "hp_up", label: "기본 체력 업" },
+        { group: "7", value: "atk_base_up", label: "기본 공격력 업" },
+        { group: "7", value: "speed_up", label: "이동 속도 업" },
+        { group: "7", value: "knockback_up", label: "넉백 횟수 증가" },
+        { group: "7", value: "cost_down", label: "생산 코스트 할인" },
+        { group: "7", value: "production_up", label: "생산 스피드 업" },
+        { group: "7", value: "tba_down", label: "공격 간격 단축" },
+    ];
 
 
 
@@ -172,7 +172,7 @@ const abilities = [
             selectedRarity.includes(cat.Rarity);
 
         // 타겟 속성 (Targets[])
-        const matchesTarget = 
+        const matchesTarget =
             selectedTargets.includes("all") ||
             (targetFilterMode === "OR"
                 ? selectedTargets.some((t) => cat.Targets.includes(t as any))
@@ -270,32 +270,31 @@ const abilities = [
             : `bg-white border-gray-300 ${colors.hover}`;
     };
 
-    const getRarityColor = (rarity: string) => {
-        const colors: Record<string, string> = {
-            Normal: "bg-gray-500",
-            Special: "bg-blue-500",
-            Rare: "bg-yellow-500",
-            "Super Rare": "bg-purple-500",
-            "Uber Super Rare": "bg-red-500",
-            "Legend Rare": "bg-pink-500",
+    const getRarityColor = (rarity: string): string => {
+        const styleMap: Record<string, string> = {
+            "기본": "bg-gray-400 text-white",
+            "EX": "bg-yellow-300 text-black",
+            "레어": "bg-blue-500 text-white",
+            "슈퍼레어": "bg-green-500 text-white",
+            "울트라슈퍼레어": "bg-red-600 text-white",
+            "레전드레어": "bg-purple-800 text-white",
         };
-        return colors[rarity] || "bg-gray-500";
-    };
 
+        return styleMap[rarity] ?? "bg-gray-300 text-black";
+    };
+    
     const getTargetColor = (target: string | undefined) => {
         const colors: Record<string, string> = {
-            빨간적: "bg-red-500 text-white",
-            떠있는적: "bg-green-500 text-white",
-            검은적: "bg-black text-white",
-            메탈적: "bg-slate-400 text-white",
-            천사: "bg-yellow-300 text-black",
-            에이리언: "bg-sky-400 text-white",
-            좀비: "bg-purple-600 text-white",
-            고대종: "bg-emerald-700 text-white",
-            악마: "bg-blue-900 text-white",
-            무속성: "bg-stone-400 text-black",
-            전체: "bg-gray-300 text-black",
-            없음: "bg-gray-200 text-gray-600",
+            "Red": "bg-red-500 text-white",
+            "Floating": "bg-green-500 text-white",
+            Black: "bg-black text-white",
+            Metal: "bg-slate-400 text-white",
+            Angel: "bg-yellow-300 text-black",
+            Alien: "bg-sky-400 text-white",
+            Zombie: "bg-purple-600 text-white",
+            Relic: "bg-emerald-700 text-white",
+            Demon: "bg-blue-900 text-white",
+            White: "bg-stone-400 text-black",
         };
         return colors[target || "없음"] || "bg-gray-200 text-gray-600";
     };

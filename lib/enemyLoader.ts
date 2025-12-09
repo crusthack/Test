@@ -212,7 +212,7 @@ export function loadAllEnemies(): Enemy[] {
       Range: v[5],
       Price: v[6],
       Width: v[8],
-      PreAttackframe: v[12],
+      PreAttackFrame: v[12],
       RespawnHalf: 0,
     });
   }

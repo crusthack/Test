@@ -59,7 +59,7 @@ export default async function CatDetailPage({ params }: PageProps) {
                         {/* Form Header */}
                         <div className="bg-gray-200 px-6 py-4 flex justify-between items-center">
                             <div className="text-xl font-bold">
-                                {cat.Name} — {cat.Form + 1}단계
+                                {cat.Name} — {cat.Form}진화
                             </div>
                             <div className="text-gray-600 text-sm">
                                 Form {cat.Form}
@@ -69,20 +69,21 @@ export default async function CatDetailPage({ params }: PageProps) {
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Left — Image + Description */}
                             <div className="space-y-4">
-                                <div className="bg-gray-50 rounded-xl h-64 flex items-center justify-center">
+                                <div className="bg-gray-50 rounded-xl h-64 relative">
                                     {cat.Image ? (
                                         <Image
                                             src={cat.Image}
                                             alt={cat.Name}
-                                            width={220}
-                                            height={220}
+                                            fill
+                                            className="object-contain p-4"
                                         />
                                     ) : (
-                                        <span className="text-gray-500">
+                                        <span className="flex items-center justify-center h-full text-gray-500">
                                             (이미지 없음)
                                         </span>
                                     )}
                                 </div>
+
 
                                 <div>
                                     <div className="text-sm text-gray-600 mb-1">
@@ -108,7 +109,7 @@ export default async function CatDetailPage({ params }: PageProps) {
                                         <li>속도: {cat.Speed}</li>
                                         <li>재생산: {cat.RespawnHalf / 2}</li>
                                         <li>TBA(공격 간격): {cat.Tba}</li>
-                                        <li>선딜: {cat.PreAttackframe}</li>
+                                        <li>선딜: {cat.PreAttackFrame}</li>
                                         <li>폭: {cat.Width}</li>
                                     </ul>
                                 </div>

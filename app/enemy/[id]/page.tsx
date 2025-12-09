@@ -107,7 +107,7 @@ export default async function EnemyDetailPage({ params }: PageProps) {
                                         <li>속도: {enemy.Speed}</li>
                                         <li>재생산: {enemy.RespawnHalf / 2}</li>
                                         <li>TBA(공격 간격): {enemy.Tba}</li>
-                                        <li>선딜: {enemy.PreAttackframe}</li>
+                                        <li>선딜: {enemy.PreAttackFrame}</li>
                                         <li>폭: {enemy.Width}</li>
                                     </ul>
                                 </div>
