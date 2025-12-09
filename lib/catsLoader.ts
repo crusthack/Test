@@ -241,6 +241,7 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
         Heatback: values[1],
         Tba: values[4] * 2,
         PreAttackFrame: values[13],
+        postAttackFrame: null,
         RespawnHalf: values[7] * 2,
         Range: values[5],
         Width: values[9],
