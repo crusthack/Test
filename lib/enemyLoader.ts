@@ -215,6 +215,9 @@ export function loadAllEnemies(): Enemy[] {
       PreAttackFrame: v[12],
       postAttackFrame: 0,
       RespawnHalf: 0,
+      levelData: [],
+      MaxLevel: 0,
+      PlusLevel: 0,
     });
   }
 
