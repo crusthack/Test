@@ -192,7 +192,7 @@ export function loadAllEnemies(): Enemy[] {
       Name: name,
       Descriptiont: descs.get(id) ?? "",
       Form: 0,
-      Image: null,
+      Image: "",
       Rarity: "unknown",
 
       Targets: Object.keys(traitMap)
@@ -213,6 +213,7 @@ export function loadAllEnemies(): Enemy[] {
       Price: v[6],
       Width: v[8],
       PreAttackFrame: v[12],
+      postAttackFrame: 0,
       RespawnHalf: 0,
     });
   }

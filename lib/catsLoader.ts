@@ -183,6 +183,41 @@ function loadRarity(id: number): string {
 
     return rarityMap[code] ?? "undefined";
 }
+// 유닛 폴더, f 1진, c 2진, s 3진, u 4진
+function loadPostFRame(id: number, form: number, postFrame:number): number {
+    if(!id || !form) return 0;
+    const formMap: Record<number, string> = {
+    1: "f",
+    2: "c",
+    3: "s",
+    4: "u",
+    };
+
+    const c = formMap[form];
+    const dir = path.join(UNIT_DIR, id.toString().padStart(3, "0"));
+    const animPath = path.join(dir, `${id.toString().padStart(3, "0")}_${c}02.maanim`);
+    if(!fs.existsSync(animPath)) return 0;
+
+    const lines = fs
+        .readFileSync(animPath, "utf8")
+        .replace(/\r/g, "")
+        .split("\n")
+        .filter(l => l.trim().length > 0);
+
+    let maxValue = 0;
+
+    for (const line of lines) {
+        const parts = line.split(",").map(Number);
+
+        if (parts.length === 4 && parts.every(n => !isNaN(n))) {
+            const first = parts[0];
+            if (first > maxValue) {
+                maxValue = first;
+            }
+        }
+    }
+    return maxValue ? maxValue - postFrame + 1 : 0;
+}
 
 // ──────────────────────────────────────────────
 // CSV 하나 파싱
@@ -241,7 +276,7 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
         Heatback: values[1],
         Tba: values[4] * 2,
         PreAttackFrame: values[13],
-        postAttackFrame: null,
+        postAttackFrame: loadPostFRame(num, form + 1, values[13]),
         RespawnHalf: values[7] * 2,
         Range: values[5],
         Width: values[9],

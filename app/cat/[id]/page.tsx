@@ -109,7 +109,8 @@ export default async function CatDetailPage({ params }: PageProps) {
                                         <li>속도: {cat.Speed}</li>
                                         <li>재생산: {cat.RespawnHalf / 2}</li>
                                         <li>TBA(공격 간격): {cat.Tba}</li>
-                                        <li>선딜: {cat.PreAttackFrame}</li>
+                                        <li>선딜F: {cat.PreAttackFrame}</li>
+                                        <li>후딜F: {cat.postAttackFrame}</li>
                                         <li>폭: {cat.Width}</li>
                                     </ul>
                                 </div>
