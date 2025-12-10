@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Card from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,10 +32,46 @@ export default function CatsTable({
   getTargetColor = defaultGetTargetColor,
   getEffectColor = defaultGetEffectColor,
 }: Props) {
+  const [sortBy, setSortBy] = useState<"id" | "name" | "rarity">("id");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (col: "id" | "name" | "rarity") => {
+    if (sortBy === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir("asc");
+    }
+  };
+
+  const displayedCats = useMemo(() => {
+    const arr = [...cats];
+    const dir = sortDir === "asc" ? 1 : -1;
+    const rarityRank: Record<string, number> = {
+      기본: 0,
+      Ex: 1,
+      레어: 2,
+      슈퍼레어: 3,
+      울트라슈퍼레어: 4,
+      레전드레어: 5,
+    };
+
+    arr.sort((a, b) => {
+      if (sortBy === "id") return (a.Id - b.Id) * dir;
+      if (sortBy === "name") return a.Name.localeCompare(b.Name) * dir;
+      if (sortBy === "rarity") {
+        const ia = rarityRank[a.Rarity] ?? 999;
+        const ib = rarityRank[b.Rarity] ?? 999;
+        return (ia - ib) * dir;
+      }
+      return 0;
+    });
+    return arr;
+  }, [cats, sortBy, sortDir]);
   // 테이블 행의 렌더링 부분을 useMemo로 최적화
   const tableRows = useMemo(
     () =>
-      cats.map((cat) => (
+      displayedCats.map((cat) => (
         <TableRow
           key={`${cat.Id}-${cat.Form}`}
           className="cursor-pointer hover:bg-gray-50"
@@ -96,7 +132,7 @@ export default function CatsTable({
           </TableCell>
         </TableRow>
       )),
-    [cats, onSelect, getRarityColor, getTargetColor, getEffectColor]
+    [displayedCats, onSelect, getRarityColor, getTargetColor, getEffectColor]
   );
 
   return (
@@ -105,10 +141,21 @@ export default function CatsTable({
         <Table className="w-full table-fixed text-left">
           <TableHeader>
             <TableRow>
-                <TableHead className="w-8 text-center">ID</TableHead>
+                <TableHead className="w-8 text-center">
+                  <button
+                    className="w-full"
+                    onClick={() => toggleSort("id")}
+                  >
+                    ID {sortBy === "id" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                  </button>
+                </TableHead>
                 <TableHead className="w-20">사진</TableHead>
-                <TableHead className="w-36">이름</TableHead>
-                <TableHead className="w-28">등급</TableHead>
+                <TableHead className="w-36">
+                  <button className="w-full text-left" onClick={() => toggleSort("name")}>이름 {sortBy === "name" ? (sortDir === "asc" ? "▲" : "▼") : ""}</button>
+                </TableHead>
+                <TableHead className="w-28">
+                  <button className="w-full text-left" onClick={() => toggleSort("rarity")}>등급 {sortBy === "rarity" ? (sortDir === "asc" ? "▲" : "▼") : ""}</button>
+                </TableHead>
                 <TableHead className="w-48">타겟</TableHead>
                 <TableHead className="w-48">효과</TableHead>
                 <TableHead className="w-52">능력</TableHead>

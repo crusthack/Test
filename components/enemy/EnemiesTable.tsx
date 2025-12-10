@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import Card from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,9 +18,30 @@ export default function EnemiesTable({
   enemies: Enemy[];
   onSelect: (enemy: Enemy) => void;
 }) {
+  const [sortBy, setSortBy] = useState<"id" | "name">("id");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (col: "id" | "name") => {
+    if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortBy(col);
+      setSortDir("asc");
+    }
+  };
+
+  const displayedEnemies = useMemo(() => {
+    const arr = [...enemies];
+    const dir = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      if (sortBy === "id") return (a.Id - b.Id) * dir;
+      if (sortBy === "name") return a.Name.localeCompare(b.Name) * dir;
+      return 0;
+    });
+    return arr;
+  }, [enemies, sortBy, sortDir]);
   const tableRows = useMemo(
     () =>
-      enemies.map((enemy) => (
+      displayedEnemies.map((enemy) => (
         <TableRow
           key={`${enemy.Id}`}
           className="cursor-pointer hover:bg-gray-50"
@@ -74,7 +95,7 @@ export default function EnemiesTable({
           </TableCell>
         </TableRow>
       )),
-    [enemies, onSelect]
+    [displayedEnemies, onSelect]
   );
 
   return (
@@ -83,9 +104,13 @@ export default function EnemiesTable({
         <Table className="w-full table-fixed text-left">
           <TableHeader>
             <TableRow>
-                <TableHead className="w-8 text-center">ID</TableHead>
+                <TableHead className="w-8 text-center">
+                  <button className="w-full" onClick={() => toggleSort("id")}>ID {sortBy === "id" ? (sortDir === "asc" ? "▲" : "▼") : ""}</button>
+                </TableHead>
                 <TableHead className="w-20">사진</TableHead>
-                <TableHead className="w-36">이름</TableHead>
+                <TableHead className="w-36">
+                  <button className="w-full text-left" onClick={() => toggleSort("name")}>이름 {sortBy === "name" ? (sortDir === "asc" ? "▲" : "▼") : ""}</button>
+                </TableHead>
                 <TableHead className="w-48">속성</TableHead>
                 <TableHead className="w-48">효과</TableHead>
                 <TableHead className="w-52">능력</TableHead>
