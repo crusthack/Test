@@ -144,7 +144,7 @@ async function loadStageNormalFile(filePath: string): Promise<number[][]> {
 //   - 이후 적 라인(최소 9개 값)
 //   - 10번째 값이 없으면 배율은 100으로 처리
 // -------------------------------------------------------------
-function parseWorldStageCsv(stageId: number): {
+async function parseWorldStageCsv(stageId: number): Promise<{
   header: {
     length: number;
     castleHealth: number;
@@ -157,7 +157,7 @@ function parseWorldStageCsv(stageId: number): {
     bossGuard: boolean;
   };
   enemies: StageEnemyLine[];
-} {
+}> {
   const file = path.join(WORLD_STAGE_DIR, `stage${stageId.toString().padStart(2, "0")}.csv`);
 
   const defaultHeader = {
@@ -239,7 +239,7 @@ function parseWorldStageCsv(stageId: number): {
 //   - 이후 적 라인(최소 10개 값)
 //   - 10번째 값(인덱스 9)는 배율 정보
 // -------------------------------------------------------------
-function parseWorldWStageCsv(mapId: number, stageId: number): {
+async function parseWorldWStageCsv(mapId: number, stageId: number): Promise<{
   header: {
     length: number;
     castleHealth: number;
@@ -252,7 +252,7 @@ function parseWorldWStageCsv(mapId: number, stageId: number): {
     bossGuard: boolean;
   };
   enemies: StageEnemyLine[];
-} {
+}> {
   const file = path.join(
     WORLD_W_STAGE_DIR,
     `stageW${mapId.toString().padStart(2, "0")}_${stageId
