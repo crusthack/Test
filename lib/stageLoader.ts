@@ -1,7 +1,5 @@
-"use server";
-
 // lib/stageLoader.ts
-import { promises as fs } from "fs";
+import * as fs from "fs";
 import * as path from "path";
 
 // -------------------------------------------------------------
@@ -88,8 +86,8 @@ const toInt = (s: string, def = 0) => {
 // StageName.txt 로딩
 //   => "003-009-000  한국" 형태 전부 Map<코드, 이름> 으로 저장
 // -------------------------------------------------------------
-async function loadStageNames(): Promise<Map<string, string>> {
-  const raw = (await fs.readFile(STAGE_NAME_FILE, "utf8")).replace(/\r/g, "");
+function loadStageNames(): Map<string, string> {
+  const raw = fs.readFileSync(STAGE_NAME_FILE, "utf8").replace(/\r/g, "");
   const map = new Map<string, string>();
 
   for (const line of raw.split("\n")) {
@@ -99,7 +97,7 @@ async function loadStageNames(): Promise<Map<string, string>> {
     const parts = pure.split(/\s+/);
     if (parts.length < 2) continue;
 
-    const code = parts[0]; // "003-009-000"
+    const code = parts[0];              // "003-009-000"
     const name = parts.slice(1).join(" "); // 나머지 전부 이름
 
     // 코드 형식만 간단히 검증
@@ -115,14 +113,10 @@ async function loadStageNames(): Promise<Map<string, string>> {
 // stageNormal*.csv 읽기
 //   각 줄에서 숫자 6개를 Settings로 사용
 // -------------------------------------------------------------
-async function loadStageNormalFile(filePath: string): Promise<number[][]> {
-  try {
-    await fs.access(filePath);
-  } catch {
-    return [];
-  }
+function loadStageNormalFile(filePath: string): number[][] {
+  if (!fs.existsSync(filePath)) return [];
 
-  const raw = (await fs.readFile(filePath, "utf8")).replace(/\r/g, "");
+  const raw = fs.readFileSync(filePath, "utf8").replace(/\r/g, "");
   const out: number[][] = [];
 
   for (const line of raw.split("\n")) {
@@ -144,7 +138,7 @@ async function loadStageNormalFile(filePath: string): Promise<number[][]> {
 //   - 이후 적 라인(최소 9개 값)
 //   - 10번째 값이 없으면 배율은 100으로 처리
 // -------------------------------------------------------------
-async function parseWorldStageCsv(stageId: number): Promise<{
+function parseWorldStageCsv(stageId: number): {
   header: {
     length: number;
     castleHealth: number;
@@ -157,7 +151,7 @@ async function parseWorldStageCsv(stageId: number): Promise<{
     bossGuard: boolean;
   };
   enemies: StageEnemyLine[];
-}> {
+} {
   const file = path.join(WORLD_STAGE_DIR, `stage${stageId.toString().padStart(2, "0")}.csv`);
 
   const defaultHeader = {
@@ -172,13 +166,11 @@ async function parseWorldStageCsv(stageId: number): Promise<{
     bossGuard: false,
   };
 
-  try {
-    await fs.access(file);
-  } catch {
+  if (!fs.existsSync(file)) {
     return { header: defaultHeader, enemies: [] };
   }
 
-  const raw = (await fs.readFile(file, "utf8")).replace(/\r/g, "");
+  const raw = fs.readFileSync(file, "utf8").replace(/\r/g, "");
   const lines = raw.split("\n");
 
   let header = defaultHeader;
@@ -239,7 +231,7 @@ async function parseWorldStageCsv(stageId: number): Promise<{
 //   - 이후 적 라인(최소 10개 값)
 //   - 10번째 값(인덱스 9)는 배율 정보
 // -------------------------------------------------------------
-async function parseWorldWStageCsv(mapId: number, stageId: number): Promise<{
+function parseWorldWStageCsv(mapId: number, stageId: number): {
   header: {
     length: number;
     castleHealth: number;
@@ -252,7 +244,7 @@ async function parseWorldWStageCsv(mapId: number, stageId: number): Promise<{
     bossGuard: boolean;
   };
   enemies: StageEnemyLine[];
-}> {
+} {
   const file = path.join(
     WORLD_W_STAGE_DIR,
     `stageW${mapId.toString().padStart(2, "0")}_${stageId
@@ -272,13 +264,11 @@ async function parseWorldWStageCsv(mapId: number, stageId: number): Promise<{
     bossGuard: false,
   };
 
-  try {
-    await fs.access(file);
-  } catch {
+  if (!fs.existsSync(file)) {
     return { header: defaultHeader, enemies: [] };
   }
 
-  const raw = (await fs.readFile(file, "utf8")).replace(/\r/g, "");
+  const raw = fs.readFileSync(file, "utf8").replace(/\r/g, "");
   const lines = raw.split("\n");
 
   let header = defaultHeader;
@@ -340,13 +330,13 @@ async function parseWorldWStageCsv(mapId: number, stageId: number): Promise<{
 //   - stageNormal0 + 세계편 stage/*.csv
 //   - stageNormal1_0/1_1/1_2 + stageW/*.csv
 // -------------------------------------------------------------
-export async function loadAllStages(): Promise<Stage[]> {
-  const nameMap = await loadStageNames();
+export function loadAllStages(): Stage[] {
+  const nameMap = loadStageNames();
   const stages: Stage[] = [];
 
   for (const entry of NORMAL_FILES) {
     const normalPath = path.join(STAGE_NORMAL_DIR, entry.file);
-    const settingsList = await loadStageNormalFile(normalPath);
+    const settingsList = loadStageNormalFile(normalPath);
 
     for (let stageId = 0; stageId < settingsList.length; stageId++) {
       const settings = settingsList[stageId];
@@ -362,8 +352,8 @@ export async function loadAllStages(): Promise<Stage[]> {
 
       const parsed =
         entry.type === "world"
-          ? await parseWorldStageCsv(stageId)
-          : await parseWorldWStageCsv(mapId, stageId);
+          ? parseWorldStageCsv(stageId)
+          : parseWorldWStageCsv(mapId, stageId);
 
       stages.push({
         StoryId: storyId,

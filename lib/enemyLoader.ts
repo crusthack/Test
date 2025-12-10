@@ -1,7 +1,5 @@
-"use server";
-
 // lib/enemyLoader.ts
-import { promises as fs } from "fs";
+import * as fs from "fs";
 import * as path from "path";
 
 import { trait, attackType } from "@/types/cat";
@@ -23,8 +21,8 @@ const safeTrim = (v: any) =>
 // -------------------------------------------------------------
 // EnemyName: 인덱스 +2 매칭
 // -------------------------------------------------------------
-async function loadEnemyNames(): Promise<Map<number, string>> {
-  const raw = (await fs.readFile(ENEMY_NAME_FILE, "utf8")).replace(/\r/g, "");
+function loadEnemyNames(): Map<number, string> {
+  const raw = fs.readFileSync(ENEMY_NAME_FILE, "utf8").replace(/\r/g, "");
   const map = new Map<number, string>();
 
   for (const line of raw.split("\n")) {
@@ -42,8 +40,8 @@ async function loadEnemyNames(): Promise<Map<number, string>> {
 // -------------------------------------------------------------
 // EnemyExplanation: 인덱스 +2 매칭
 // -------------------------------------------------------------
-async function loadEnemyDescriptions(): Promise<Map<number, string>> {
-  const raw = (await fs.readFile(ENEMY_DESC_FILE, "utf8")).replace(/\r/g, "");
+function loadEnemyDescriptions(): Map<number, string> {
+  const raw = fs.readFileSync(ENEMY_DESC_FILE, "utf8").replace(/\r/g, "");
   const map = new Map<number, string>();
 
   for (const line of raw.split("\n")) {
@@ -197,11 +195,11 @@ function getEnemyAttackTypes(v: number[]): attackType[] {
 // -------------------------------------------------------------
 // 메인 enemy 파서
 // -------------------------------------------------------------
-export async function loadAllEnemies(): Promise<Enemy[]> {
-  const names = await loadEnemyNames();
-  const descs = await loadEnemyDescriptions();
+export function loadAllEnemies(): Enemy[] {
+  const names = loadEnemyNames();
+  const descs = loadEnemyDescriptions();
 
-  const raw = (await fs.readFile(ENEMY_CSV, "utf8")).replace(/\r/g, "");
+  const raw = fs.readFileSync(ENEMY_CSV, "utf8").replace(/\r/g, "");
   const lines = raw.split("\n").filter((l) => safeTrim(l).length > 0);
 
   const out: Enemy[] = [];
@@ -250,7 +248,7 @@ export async function loadAllEnemies(): Promise<Enemy[]> {
 }
 
 // 적도 캐싱
-export async function loadEnemiesById(id: number): Promise<Enemy[]> {
-  const all = await loadAllEnemies();
-  return all.filter((e) => e.Id === id);
+export function loadEnemiesById(id: number): Enemy[] {
+    const all = loadAllEnemies();
+    return all.filter(e => e.Id === id);
 }
