@@ -1,16 +1,19 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import type { Cat as Cat } from "@/types/cat";
+import { TARGET_KO, AFFECT_KO, ABILITY_KO, toKo } from "@/lib/translationMaps";
+import { getRarityColor, getTargetColor } from "@/lib/colorUtils";
 import Link from "next/link";
+
 
 interface Props {
   isOpen: boolean;
@@ -18,9 +21,6 @@ interface Props {
   selectedCat: Cat | null;
   currentLevel: number;
   setCurrentLevel: (v: number) => void;
-  getRarityColor: (rarity: string) => string;
-  getTargetColor: (target: string) => string;
-  getEffectColor: (effect: string) => string;
 }
 
 export default function CatDetailDialog({
@@ -29,134 +29,66 @@ export default function CatDetailDialog({
   selectedCat,
   currentLevel,
   setCurrentLevel,
-  getRarityColor,
-  getTargetColor,
-  getEffectColor,
 }: Props) {
   if (!selectedCat) return null;
-  if (currentLevel < 1) currentLevel = 1;
-  if (currentLevel > selectedCat.MaxLevel + selectedCat.PlusLevel) currentLevel = selectedCat.MaxLevel + selectedCat.PlusLevel;
 
-  const levelData = selectedCat.levelData;
-  /* ------------------- 계산 ------------------- */
-  const baseHp = selectedCat.Hp;
-  const baseAtk = selectedCat.Atk;
-  const zeroAtk = baseAtk - levelData[0] / 100 * selectedCat.Atk;
-  const zeroHp = baseHp - levelData[0] / 100 * selectedCat.Hp;
-  let remainLevel = currentLevel;
-  let calculatedHp = zeroHp; // CSV 기반: 레벨 보정 아직 없음
-  let calculatedAttack = zeroAtk;
-  let index = 0;
-  console.log('hello, world!!');
+  // 레벨 제한 처리
+  const maxLevel = selectedCat.MaxLevel + selectedCat.PlusLevel;
+  const validLevel = Math.max(1, Math.min(currentLevel, maxLevel));
 
-  while (remainLevel) {
-    if (remainLevel < 10) {
-      calculatedAttack += levelData[index] / 100 * baseAtk * remainLevel;
-      calculatedHp += levelData[index] / 100 * baseHp * remainLevel;
-      break;
+  const stats = useMemo(() => {
+    const levelData = selectedCat.levelData;
+    const baseHp = selectedCat.Hp;
+    const baseAtk = selectedCat.Atk;
+    const zeroAtk = baseAtk - (levelData[0] / 100) * selectedCat.Atk;
+    const zeroHp = baseHp - (levelData[0] / 100) * selectedCat.Hp;
+
+    let remainLevel = validLevel;
+    let calculatedHp = zeroHp;
+    let calculatedAttack = zeroAtk;
+    let index = 0;
+
+    while (remainLevel) {
+      if (remainLevel < 10) {
+        calculatedAttack += (levelData[index] / 100) * baseAtk * remainLevel;
+        calculatedHp += (levelData[index] / 100) * baseHp * remainLevel;
+        break;
+      }
+      calculatedAttack += (levelData[index] / 100) * baseAtk * 10;
+      calculatedHp += (levelData[index] / 100) * baseHp * 10;
+      index++;
+      remainLevel -= 10;
     }
-    calculatedAttack += levelData[index] / 100 * baseAtk * 10;
-    calculatedHp += levelData[index] / 100 * baseHp * 10;
-    index++;
-    console.log(remainLevel);
-    remainLevel -= 10;
-  }
-  calculatedAttack = Math.round(calculatedAttack);
-  calculatedHp = Math.round(calculatedHp);
 
+    return {
+      calculatedAttack: Math.round(calculatedAttack),
+      calculatedHp: Math.round(calculatedHp),
+    };
+  }, [selectedCat, validLevel]);
 
-  /* ------------------- 한글 변환 ------------------- */
-  const targetKo: Record<string, string> = {
-    Red: "빨간적",
-    Floating: "떠있는적",
-    Black: "검은적",
-    Metal: "메탈적",
-    Angel: "천사",
-    Alien: "에이리언",
-    Zombie: "좀비",
-    Relic: "고대종",
-    Demon: "악마",
-    White: "무속성",
-  };
+  const paddedId = useMemo(() => {
+    return selectedCat.Id.toString().padStart(3, "0");
+  }, [selectedCat.Id]);
 
-  const affectKo: Record<string, string> = {
-    Slow: "느리게 한다",
-    Stop: "멈춘다",
-    Knockback: "날려버린다",
-    Weak: "공격력 다운",
-    MassiveDamage: "초 데미지",
-    InsaneDamage: "극 데미지",
-    Good: "엄청 강하다",
-    Resistant: "맷집이 좋다",
-    InsanelyTough: "초 맷집이 좋다",
-    Curse: "저주",
-    Only: "타겟 한정",
-    Warp: "워프",
-    ImuATK: "공격 무효",
-  };
+  // 다이얼로그 닫을 때 상태 정리
+  const handleOpenChange = useCallback((open: boolean) => {
+    onOpenChange(open);
+  }, [onOpenChange]);
 
-  const abilityKo: Record<string, string> = {
-    AtkUp: "공격력 업",
-    LETHAL: "살아남는다",
-    BaseDestroyer: "성 파괴 특기",
-    Critical: "크리티컬",
-    MetalKiller: "메탈 킬러",
-    ZombieKiller: "좀비 킬러",
-    SoulStrike: "영혼 공격",
-    BarrierBreak: "베리어 브레이커",
-    ShieldBreak: "실드 브레이커",
-    StrickAttack: "혼신의 일격",
-    Bounty: "격파시 머니 업",
-    Metallic: "메탈",
-    MiniWave: "소파동",
-    Wave: "파동 공격",
-    MiniVolcano: "소열파",
-    Volcano: "열파",
-    VolcanoCounter: "열파 카운터",
-    Blast: "폭파 공격",
-    WaveBlocker: "파동 스토퍼",
-    Summon: "소환",
-    ColosusSlayer: "초생명체 특효",
-    BehemothSlayer: "초수 특효",
-    SageHunter: "초현자 특효",
-    ImuWeak: "공격력 다운 무효",
-    ImuKB: "날려버림 무효",
-    ImuStop: "멈춤 무효",
-    ImuSlow: "느리게 무효",
-    ImuWarp: "워프 무효",
-    ImuCurse: "저주 무효",
-    ImuPoison: "독 데미지 무효",
-    ImuWave: "파동 무효",
-    ImuVolcano: "열파 무효",
-    ImuBlast: "폭파 무효",
-    WeakResist: "공격력 다운 저항",
-    StopResist: "멈춤 저항",
-    SlowResist: "느리게 저항",
-    KBResist: "넉백 저항",
-    WaveResist: "파동 저항",
-    VolcanoResist: "열파 저항",
-    WarpResist: "워프 저항",
-    CurseResist: "저주 저항",
-    PoisonResist: "독 저항",
-  };
+  // 레벨 변경 핸들러
+  const handleLevelChange = useCallback((newLevel: number) => {
+    setCurrentLevel(Math.max(1, Math.min(newLevel, maxLevel)));
+  }, [maxLevel, setCurrentLevel]);
 
-  const toKo = (map: Record<string, string>, key: string) =>
-    map[key] ?? key;
-  const paddedId = selectedCat.Id.toString().padStart(3, "0");
+  // 색상 유틸은 lib/colorUtils에서 제공
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent
-        forceMount
-        className="
-          max-w-2xl max-h-[90vh] overflow-y-auto
-          !animate-none transition-none
-        "
-      >
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-
             {/* Title */}
-            <Link href={`/cat/${selectedCat.Id.toString().padStart(3, "0")}`}>
+            <Link href={`/cat/${paddedId}`}>
               <div>
                 <DialogTitle className="text-blue-600 cursor-pointer hover:underline">
                   {selectedCat.Name}
@@ -169,14 +101,14 @@ export default function CatDetailDialog({
               <span className="text-gray-600 text-sm">레벨</span>
 
               <button
-                onClick={() => setCurrentLevel(Math.max(1, currentLevel - 10))}
+                onClick={() => handleLevelChange(validLevel - 10)}
                 className="w-10 h-8 rounded bg-white border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white transition-colors text-xs"
               >
                 -10
               </button>
 
               <button
-                onClick={() => setCurrentLevel(Math.max(1, currentLevel - 1))}
+                onClick={() => handleLevelChange(validLevel - 1)}
                 className="w-8 h-8 rounded-full border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center"
               >
                 -
@@ -186,23 +118,23 @@ export default function CatDetailDialog({
                 type="number"
                 min={1}
                 max={999}
-                value={currentLevel}
+                value={validLevel}
                 onChange={(e) => {
                   const v = parseInt(e.target.value);
-                  if (!isNaN(v)) setCurrentLevel(Math.max(1, Math.min(999, v)));
+                  if (!isNaN(v)) handleLevelChange(v);
                 }}
                 className="w-20 h-8 text-center"
               />
 
               <button
-                onClick={() => setCurrentLevel(Math.min(999, currentLevel + 1))}
+                onClick={() => handleLevelChange(validLevel + 1)}
                 className="w-8 h-8 rounded-full border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center"
               >
                 +
               </button>
 
               <button
-                onClick={() => setCurrentLevel(Math.min(999, currentLevel + 10))}
+                onClick={() => handleLevelChange(validLevel + 10)}
                 className="w-10 h-8 rounded bg-white border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white transition-colors text-xs"
               >
                 +10
@@ -211,13 +143,7 @@ export default function CatDetailDialog({
           </div>
         </DialogHeader>
 
-        {/* ------------------------------------- */}
-        {/* MAIN CONTENT */}
-        {/* ------------------------------------- */}
-
         <div className="space-y-6 mt-4">
-
-          {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-gray-600 mb-1">ID</p>
@@ -232,42 +158,39 @@ export default function CatDetailDialog({
             </div>
           </div>
 
-          {/* Targets */}
           <div>
             <p className="text-gray-600 mb-2">타겟 속성</p>
             <div className="flex flex-wrap gap-2">
-              {selectedCat.Targets.map((t, i) => (
-                <Badge key={i} className={getTargetColor(t)}>
-                  {toKo(targetKo, t)}
+              {(Array.isArray(selectedCat.Targets) ? selectedCat.Targets : []).map((t, i) => (
+                <Badge key={i} className={getTargetColor(String(t))}>
+                  {toKo(TARGET_KO, t as any)}
                 </Badge>
               ))}
             </div>
           </div>
 
-          {/* Effects */}
           <div>
             <p className="text-gray-600 mb-2">효과</p>
             <div className="flex flex-wrap gap-2">
-              {selectedCat.Affects.map((e, i) => (
-                <Badge key={i} className={getEffectColor(e)}>
-                  {toKo(affectKo, e)}
+              {(Array.isArray(selectedCat.Affects) ? selectedCat.Affects : []).map((e, i) => (
+                <Badge key={i} className="bg-gray-200 text-gray-600">
+                  {toKo(AFFECT_KO, e as any)}
                 </Badge>
               ))}
             </div>
           </div>
 
-          {/* Stats */}
           <div className="border-t pt-4">
-            <h4 className="mb-4">스탯 정보 (레벨 {currentLevel})</h4>
+            <h4 className="mb-4">스탯 정보 (레벨 {validLevel})</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-gray-600">HP</p>
-                <p className="text-red-600">{calculatedHp}</p>
+                <p className="text-red-600">{stats.calculatedHp}</p>
               </div>
 
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-gray-600">공격력</p>
-                <p className="text-orange-600">{calculatedAttack}</p>
+                <p className="text-orange-600">{stats.calculatedAttack}</p>
               </div>
 
               <div className="bg-gray-50 p-3 rounded-lg">
@@ -292,13 +215,12 @@ export default function CatDetailDialog({
             </div>
           </div>
 
-          {/* Abilities */}
           <div className="border-t pt-4">
             <h4 className="mb-3">특수 능력</h4>
             <div className="flex flex-wrap gap-2">
-              {selectedCat.Abilities.map((ab, i) => (
+              {(Array.isArray(selectedCat.Abilities) ? selectedCat.Abilities : []).map((ab, i) => (
                 <Badge key={i} variant="outline" className="px-3 py-1">
-                  {toKo(abilityKo, ab)}
+                  {toKo(ABILITY_KO, ab as any)}
                 </Badge>
               ))}
             </div>

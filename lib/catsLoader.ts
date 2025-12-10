@@ -1,6 +1,8 @@
+"use server";
+
 import { loadAllEnemies } from "./enemyLoader";
 
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as path from "path";
 import { Cat, trait, attackType, affect, ability } from "@/types/cat";
 
@@ -24,22 +26,22 @@ let cachePostFrame: Map<string, number> = new Map(); // key = "id-form"
 // ──────────────────────────────────────────────
 // 유닛 설명 로드 + 캐싱
 // ──────────────────────────────────────────────
-function loadDescriptions(): Map<number, string[]> {
+async function loadDescriptions(): Promise<Map<number, string[]>> {
     if (cacheDescriptions) return cacheDescriptions;
 
-    const txt = fs.readFileSync(DESC_FILE, "utf8").replace(/\r/g, "");
+    const txt = (await fs.readFile(DESC_FILE, "utf8")).replace(/\r/g, "");
     const map = new Map<number, string[]>();
 
     const lines = txt.split("\n")
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
 
     for (const line of lines) {
         const cols = line.split("\t");
         if (cols.length < 2) continue;
 
         const num = parseInt(cols[0]);
-        const descList = cols.slice(1).map(s => s.trim());
+        const descList = cols.slice(1).map((s) => s.trim());
         map.set(num, descList);
     }
 
@@ -50,20 +52,20 @@ function loadDescriptions(): Map<number, string[]> {
 // ──────────────────────────────────────────────
 // 유닛 이름 로드 + 캐싱
 // ──────────────────────────────────────────────
-function loadUnitNames(): Map<number, string[]> {
+async function loadUnitNames(): Promise<Map<number, string[]>> {
     if (cacheNames) return cacheNames;
 
-    const txt = fs.readFileSync(NAME_FILE, "utf8").replace(/\r/g, "");
+    const txt = (await fs.readFile(NAME_FILE, "utf8")).replace(/\r/g, "");
     const map = new Map<number, string[]>();
 
-    const lines = txt.split("\n").filter(l => l.trim().length > 0);
+    const lines = txt.split("\n").filter((l) => l.trim().length > 0);
 
     for (const line of lines) {
         const cols = line.split("\t");
         if (cols.length < 2) continue;
 
         const num = parseInt(cols[0]);
-        const names = cols.slice(1).filter(n => n.length > 0);
+        const names = cols.slice(1).filter((n) => n.length > 0);
         map.set(num, names);
     }
 
@@ -87,7 +89,7 @@ const traitMap: Record<number, trait> = {
     96: "Demon",
 };
 
-export function getAffects(values: number[]): affect[] {
+export async function getAffects(values: number[]): Promise<affect[]> {
     const out: affect[] = [];
     const add = (cond: boolean, name: affect) => cond && out.push(name);
 
@@ -108,7 +110,7 @@ export function getAffects(values: number[]): affect[] {
     return out;
 }
 
-export function getAbilities(values: number[]): ability[] {
+export async function getAbilities(values: number[]): Promise<ability[]> {
     const out: ability[] = [];
     const add = (cond: boolean, name: ability) => cond && out.push(name);
 
@@ -167,23 +169,24 @@ function getAttackTypes(values: number[]): attackType[] {
 // ──────────────────────────────────────────────
 // 유닛 레어도 / MaxLevel 데이터
 // ──────────────────────────────────────────────
-function loadUnitBuy(id: number): { rarity: string, maxlevel: number, maxpluslevel: number } {
+async function loadUnitBuy(id: number): Promise<{ rarity: string; maxlevel: number; maxpluslevel: number }> {
     // 캐시 맵 생성
     if (!cacheBuyData) cacheBuyData = new Map();
 
     if (cacheBuyData.has(id)) return cacheBuyData.get(id)!;
 
-    if (!fs.existsSync(RARE_FILE)) {
+    try {
+        await fs.access(RARE_FILE);
+    } catch {
         const def = { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
         cacheBuyData.set(id, def);
         return def;
     }
 
-    const lines = fs
-        .readFileSync(RARE_FILE, "utf8")
+    const lines = (await fs.readFile(RARE_FILE, "utf8"))
         .replace(/\r/g, "")
         .split("\n")
-        .filter(l => l.trim().length > 0);
+        .filter((l) => l.trim().length > 0);
 
     const line = lines[id];
     if (!line) {
@@ -217,20 +220,24 @@ function loadUnitBuy(id: number): { rarity: string, maxlevel: number, maxpluslev
 // ──────────────────────────────────────────────
 // 유닛 레벨 데이터
 // ──────────────────────────────────────────────
-function loadUnitLevelData(id: number): number[] {
+async function loadUnitLevelData(id: number): Promise<number[]> {
     if (!cacheLevelData) cacheLevelData = new Map();
 
     if (cacheLevelData.has(id)) return cacheLevelData.get(id)!;
 
-    if (!fs.existsSync(LV_FILE)) return [];
+    try {
+        await fs.access(LV_FILE);
+    } catch {
+        return [];
+    }
 
-    const lines = fs.readFileSync(LV_FILE, "utf8")
+    const lines = (await fs.readFile(LV_FILE, "utf8"))
         .replace(/\r/g, "")
         .split("\n")
-        .filter(l => l.trim().length > 0);
+        .filter((l) => l.trim().length > 0);
 
     const line = lines[id];
-    const arr = line.split(',').map(n => Number(n));
+    const arr = line.split(",").map((n) => Number(n));
 
     cacheLevelData.set(id, arr);
     return arr;
@@ -239,7 +246,7 @@ function loadUnitLevelData(id: number): number[] {
 // ──────────────────────────────────────────────
 // 애니메이션 후딜 프레임 계산 + 캐싱
 // ──────────────────────────────────────────────
-function loadPostFRame(id: number, form: number, postFrame: number): number {
+async function loadPostFRame(id: number, form: number, postFrame: number): Promise<number> {
     const key = `${id}-${form}`;
     if (cachePostFrame.has(key)) return cachePostFrame.get(key)!;
 
@@ -251,15 +258,17 @@ function loadPostFRame(id: number, form: number, postFrame: number): number {
     const dir = path.join(UNIT_DIR, id.toString().padStart(3, "0"));
     const animPath = path.join(dir, `${id.toString().padStart(3, "0")}_${c}02.maanim`);
 
-    if (!fs.existsSync(animPath)) {
+    try {
+        await fs.access(animPath);
+    } catch {
         cachePostFrame.set(key, 0);
         return 0;
     }
 
-    const lines = fs.readFileSync(animPath, "utf8")
+    const lines = (await fs.readFile(animPath, "utf8"))
         .replace(/\r/g, "")
         .split("\n")
-        .filter(l => l.trim().length > 0);
+        .filter((l) => l.trim().length > 0);
 
     let maxValue = 0;
 
@@ -280,18 +289,22 @@ function loadPostFRame(id: number, form: number, postFrame: number): number {
 // ──────────────────────────────────────────────
 // CSV 하나 파싱
 // ──────────────────────────────────────────────
-function loadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): Cat | null {
-    const { rarity, maxlevel, maxpluslevel } = loadUnitBuy(num);
+async function asyncLoadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): Promise<Cat | null> {
+    const { rarity, maxlevel, maxpluslevel } = await loadUnitBuy(num);
 
     const dir = path.join(UNIT_DIR, num.toString().padStart(3, "0"));
     const csvPath = path.join(dir, `unit${num.toString().padStart(3, "0")}.csv`);
 
-    if (!fs.existsSync(csvPath)) return null;
+    try {
+        await fs.access(csvPath);
+    } catch {
+        return null;
+    }
 
-    const lines = fs.readFileSync(csvPath, "utf8")
+    const lines = (await fs.readFile(csvPath, "utf8"))
         .replace(/\r/g, "")
         .split("\n")
-        .filter(l => l.trim().length > 0);
+        .filter((l) => l.trim().length > 0);
 
     if (form >= lines.length) return null;
 
@@ -312,6 +325,8 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
 
     const imageurl = `https://battlecats-db.imgs-server.com/u${(num + 1).toString().padStart(3, "0")}-${form + 1}.png`;
 
+    let as = await getAbilities(values);
+
     return {
         Id: num,
         Name: name,
@@ -322,8 +337,8 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
 
         Targets: traits,
         AttackType: getAttackTypes(values),
-        Affects: getAffects(values),
-        Abilities: getAbilities(values),
+        Affects: await getAffects(values),
+        Abilities: as,
 
         Price: values[6],
         Hp: values[0],
@@ -332,31 +347,31 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
         Heatback: values[1],
         Tba: values[4] * 2,
         PreAttackFrame: values[13],
-        postAttackFrame: loadPostFRame(num, form + 1, values[13]),
+        postAttackFrame: await loadPostFRame(num, form + 1, values[13]),
         RespawnHalf: values[7] * 2,
         Range: values[5],
         Width: values[9],
         MaxLevel: maxlevel,
         PlusLevel: maxpluslevel,
 
-        levelData: loadUnitLevelData(num)
+        levelData: await loadUnitLevelData(num)
     };
 }
 
 // ──────────────────────────────────────────────
 // 전체 유닛 로드 + 캐싱
 // ──────────────────────────────────────────────
-export function loadAllCats(): Cat[] {
+export async function loadAllCats(): Promise<Cat[]> {
     if (cacheUnits) return cacheUnits;
 
-    const nameMap = loadUnitNames();
-    const descMap = loadDescriptions();
+    const nameMap = await loadUnitNames();
+    const descMap = await loadDescriptions();
 
     const arr: Cat[] = [];
 
     for (const [num, names] of nameMap.entries()) {
         for (let form = 0; form < names.length; form++) {
-            const c = loadOneCSV(num, form, names[form], descMap);
+            const c = await asyncLoadOneCSV(num, form, names[form], descMap);
             if (c) arr.push(c);
         }
     }
@@ -366,7 +381,7 @@ export function loadAllCats(): Cat[] {
 }
 
 // ID에 해당하는 1~4폼 유닛만 골라 반환
-export function loadCatsById(id: number): Cat[] {
-    const all = loadAllCats();
+export async function loadCatsById(id: number): Promise<Cat[]> {
+    const all = await loadAllCats();
     return all.filter(c => c.Id === id);
 }

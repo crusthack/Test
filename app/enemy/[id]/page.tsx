@@ -6,9 +6,9 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export function generateStaticParams() {
-    const enemies = loadAllEnemies();
-    return enemies.map(enemy => ({
+export async function generateStaticParams() {
+    const enemies = await loadAllEnemies();
+    return enemies.map((enemy) => ({
         id: enemy.Id.toString().padStart(3, "0"),
     }));
 }
@@ -21,7 +21,7 @@ export default async function EnemyDetailPage({ params }: PageProps) {
         notFound();
     }
 
-    const enemies = loadEnemiesById(numericId);
+    const enemies = await loadEnemiesById(numericId);
 
     if (!enemies || enemies.length === 0) {
         notFound();
@@ -117,7 +117,7 @@ export default async function EnemyDetailPage({ params }: PageProps) {
                                         공격 타입
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {enemy.AttackType.map((t, i) => (
+                                        {(Array.isArray(enemy.AttackType) ? enemy.AttackType : []).map((t, i) => (
                                             <span key={i} className="px-2 py-1 bg-blue-100 text-blue-600 rounded-md text-xs">
                                                 {t}
                                             </span>
@@ -131,7 +131,7 @@ export default async function EnemyDetailPage({ params }: PageProps) {
                                         속성(Target traits)
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {enemy.Targets.map((t, i) => (
+                                        {(Array.isArray(enemy.Targets) ? enemy.Targets : []).map((t, i) => (
                                             <span key={i} className="px-2 py-1 bg-purple-100 text-purple-600 rounded-md text-xs">
                                                 {t}
                                             </span>
@@ -144,9 +144,9 @@ export default async function EnemyDetailPage({ params }: PageProps) {
                                     <div className="text-sm text-gray-600 mb-2">
                                         특수 능력(Abilities)
                                     </div>
-                                    {enemy.Abilities.length > 0 ? (
+                                    {(Array.isArray(enemy.Abilities) && enemy.Abilities.length > 0) ? (
                                         <div className="flex flex-wrap gap-2">
-                                            {enemy.Abilities.map((a, i) => (
+                                            {(Array.isArray(enemy.Abilities) ? enemy.Abilities : []).map((a, i) => (
                                                 <span key={i} className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs">
                                                     {a}
                                                 </span>

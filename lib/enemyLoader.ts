@@ -1,5 +1,7 @@
+"use server";
+
 // lib/enemyLoader.ts
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as path from "path";
 
 import { trait, attackType } from "@/types/cat";
@@ -8,9 +10,9 @@ import {Enemy, affect, ability} from "@/types/enemy"
 // -------------------------------------------------------------
 // 파일 경로
 // -------------------------------------------------------------
-const ENEMY_CSV = path.join(process.cwd(), "data/t_unit.csv");
-const ENEMY_NAME_FILE = path.join(process.cwd(), "data/EnemyName.txt");
-const ENEMY_DESC_FILE = path.join(process.cwd(), "data/EnemyExplanation.txt");
+const ENEMY_CSV = path.join(process.cwd(), "data/enemy/t_unit.csv");
+const ENEMY_NAME_FILE = path.join(process.cwd(), "data/enemy/EnemyName.txt");
+const ENEMY_DESC_FILE = path.join(process.cwd(), "data/enemy/EnemyExplanation.txt");
 
 // -------------------------------------------------------------
 // 안전한 trim
@@ -21,8 +23,8 @@ const safeTrim = (v: any) =>
 // -------------------------------------------------------------
 // EnemyName: 인덱스 +2 매칭
 // -------------------------------------------------------------
-function loadEnemyNames(): Map<number, string> {
-  const raw = fs.readFileSync(ENEMY_NAME_FILE, "utf8").replace(/\r/g, "");
+async function loadEnemyNames(): Promise<Map<number, string>> {
+  const raw = (await fs.readFile(ENEMY_NAME_FILE, "utf8")).replace(/\r/g, "");
   const map = new Map<number, string>();
 
   for (const line of raw.split("\n")) {
@@ -40,8 +42,8 @@ function loadEnemyNames(): Map<number, string> {
 // -------------------------------------------------------------
 // EnemyExplanation: 인덱스 +2 매칭
 // -------------------------------------------------------------
-function loadEnemyDescriptions(): Map<number, string> {
-  const raw = fs.readFileSync(ENEMY_DESC_FILE, "utf8").replace(/\r/g, "");
+async function loadEnemyDescriptions(): Promise<Map<number, string>> {
+  const raw = (await fs.readFile(ENEMY_DESC_FILE, "utf8")).replace(/\r/g, "");
   const map = new Map<number, string>();
 
   for (const line of raw.split("\n")) {
@@ -189,18 +191,17 @@ function getEnemyAttackTypes(v: number[]): attackType[] {
   if (ldr !== 0) out.push(ldr < 0 ? "omni" : "long");
 
   if (out.length === 0) out.push("single");
-  console.log(out);
   return out;
 }
 
 // -------------------------------------------------------------
 // 메인 enemy 파서
 // -------------------------------------------------------------
-export function loadAllEnemies(): Enemy[] {
-  const names = loadEnemyNames();
-  const descs = loadEnemyDescriptions();
+export async function loadAllEnemies(): Promise<Enemy[]> {
+  const names = await loadEnemyNames();
+  const descs = await loadEnemyDescriptions();
 
-  const raw = fs.readFileSync(ENEMY_CSV, "utf8").replace(/\r/g, "");
+  const raw = (await fs.readFile(ENEMY_CSV, "utf8")).replace(/\r/g, "");
   const lines = raw.split("\n").filter((l) => safeTrim(l).length > 0);
 
   const out: Enemy[] = [];
@@ -249,7 +250,7 @@ export function loadAllEnemies(): Enemy[] {
 }
 
 // 적도 캐싱
-export function loadEnemiesById(id: number): Enemy[] {
-    const all = loadAllEnemies();
-    return all.filter(e => e.Id === id);
+export async function loadEnemiesById(id: number): Promise<Enemy[]> {
+  const all = await loadAllEnemies();
+  return all.filter((e) => e.Id === id);
 }

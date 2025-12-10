@@ -6,8 +6,8 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export function generateStaticParams() {
-    const cats = loadAllCats();
+export async function generateStaticParams() {
+    const cats = await loadAllCats();
     return cats.map(cat => ({
         id: cat.Id.toString().padStart(3, "0"),
     }));
@@ -22,7 +22,7 @@ export default async function CatDetailPage({ params }: PageProps) {
     }
 
     // id에 해당하는 모든 폼 불러오기
-    const cats = loadCatsById(numericId);
+    const cats = await loadCatsById(numericId);
 
     if (!cats || cats.length === 0) {
         notFound();
@@ -140,7 +140,7 @@ export default async function CatDetailPage({ params }: PageProps) {
                                             공격 타입
                                         </div>
                                         <div className="flex flex-wrap gap-2">
-                                            {cat.AttackType.map((t, i) => (
+                                            {(Array.isArray(cat.AttackType) ? cat.AttackType : []).map((t, i) => (
                                                 <span key={i} className="px-2 py-1 bg-blue-100 text-blue-600 rounded-md text-xs">
                                                     {t}
                                                 </span>
@@ -153,7 +153,7 @@ export default async function CatDetailPage({ params }: PageProps) {
                                             속성(Target traits)
                                         </div>
                                         <div className="flex flex-wrap gap-2">
-                                            {cat.Targets.map((t, i) => (
+                                            {(Array.isArray(cat.Targets) ? cat.Targets : []).map((t, i) => (
                                                 <span key={i} className="px-2 py-1 bg-purple-100 text-purple-600 rounded-md text-xs">
                                                     {t}
                                                 </span>
@@ -165,9 +165,9 @@ export default async function CatDetailPage({ params }: PageProps) {
                                         <div className="text-sm text-gray-600 mb-2">
                                             특수 능력(Abilities)
                                         </div>
-                                        {cat.Abilities.length > 0 ? (
+                                        {(Array.isArray(cat.Abilities) && cat.Abilities.length > 0) ? (
                                             <div className="flex flex-wrap gap-2">
-                                                {cat.Abilities.map((a, i) => (
+                                                {(Array.isArray(cat.Abilities) ? cat.Abilities : []).map((a, i) => (
                                                     <span key={i} className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs">
                                                         {a}
                                                     </span>
