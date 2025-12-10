@@ -1,12 +1,10 @@
 "use client";
-
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { loadAllCats } from "@/lib/catsLoader";
 import CatDetailDialog from "@/components/cat/CatDetailDialog";
 import CatsTable from "@/components/cat/CatsTable";
 import UnifiedFiltersPanel from "@/components/common/UnifiedFiltersPanel";
 import type { Cat } from "@/types/cat";
-import { getRarityColor as defaultGetRarityColor, getTargetColor as defaultGetTargetColor, getEffectColor as defaultGetEffectColor } from "@/lib/colorUtils";
 
 const FILTER_RARITY_OPTIONS = [
   { value: "all", label: "전체", color: "gray" as const },

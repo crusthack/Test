@@ -1,7 +1,4 @@
 "use server";
-
-import { loadAllEnemies } from "./enemyLoader";
-
 import { promises as fs } from "fs";
 import * as path from "path";
 import { Cat, trait, attackType, affect, ability } from "@/types/cat";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import { loadCatsById, loadAllCats } from "@/lib/catsLoader";
 import Image from "next/image";
