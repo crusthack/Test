@@ -1,77 +1,80 @@
 "use client";
 
 import { useState } from "react";
-import type { ability, Cat as Cat } from "@/types/cat";
+import type { Cat } from "@/types/cat";
 
 import CatDetailDialog from "@/components/cat/CatDetailDialog";
 import CatsTable from "@/components/cat/CatsTable";
-import FiltersPanel from "@/components/cat/FiltersPanel";
+import FiltersPanel from "@/components/cat/CatFiltersPanel";
 
 export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
-    const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const [selectedRarity, setSelectedRarity] = useState<string[]>(["all"]);
-    const [selectedTargets, setSelectedTargets] = useState<string[]>(["all"]);
-    const [targetFilterMode, setTargetFilterMode] = useState<"OR" | "AND">("OR");
+  const [selectedRarity, setSelectedRarity] = useState<string[]>(["all"]);
 
-    const [selectedEffects, setSelectedEffects] = useState<string[]>(["all"]);
-    const [effectFilterMode, setEffectFilterMode] = useState<"OR" | "AND">("OR");
+  const [selectedTargets, setSelectedTargets] = useState<string[]>(["all"]);
+  const [targetFilterMode, setTargetFilterMode] = useState<"OR" | "AND">("OR");
 
-    const [selectedAbilities, setSelectedAbilities] = useState<string[]>(["all"]);
-    const [abilityFilterMode, setAbilityFilterMode] = useState<"OR" | "AND">(
-        "OR"
-    );
+  const [selectedEffects, setSelectedEffects] = useState<string[]>(["all"]);
+  const [effectFilterMode, setEffectFilterMode] = useState<"OR" | "AND">("AND");
 
-    const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [currentLevel, setCurrentLevel] = useState(30);
+  const [selectedAbilities, setSelectedAbilities] = useState<string[]>(["all"]);
+  const [abilityFilterMode, setAbilityFilterMode] =
+    useState<"OR" | "AND">("AND");
 
-    /* --------------------------- 필터 옵션 (그대로 유지) --------------------------- */
+  const [selectedAttackTypes, setSelectedAttackTypes] = useState<string[]>([
+    "all",
+  ]);
+  const [attackTypeFilterMode, setAttackTypeFilterMode] = useState<
+    "OR" | "AND"
+  >("AND");
 
-    const rarities = [
-        { value: "all", label: "전체", color: "gray" },
-        { value: "기본", label: "기본", color: "red" },
-        { value: "Ex", label: "Ex", color: "orange" },
-        { value: "레어", label: "레어", color: "yellow" },
-        { value: "슈퍼레어", label: "슈퍼레어", color: "green" },
-        { value: "울트라슈퍼레어", label: "울트라슈퍼레어", color: "blue" },
-        { value: "레전드레어", label: "레전드레어", color: "purple" },
-    ];
+  const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentLevel, setCurrentLevel] = useState(30);
 
-    const targets = [
-        { value: "all", label: "전체", color: "gray" },
-        { value: "Red", label: "빨간적", color: "red" },
-        { value: "Floating", label: "떠있는적", color: "green" },
-        { value: "Black", label: "검은적", color: "black" },
-        { value: "Metal", label: "메탈적", color: "slate" },
-        { value: "Angel", label: "천사", color: "yellow" },
-        { value: "Alien", label: "에이리언", color: "sky" },
-        { value: "Zombie", label: "좀비", color: "purple" },
-        { value: "Relic", label: "고대종", color: "emerald" },
-        { value: "Demon", label: "악마", color: "blue-900" },
-        { value: "White", label: "무속성", color: "stone" },
-    ];
+  /* -------------------------- 필터 옵션 -------------------------- */
 
+  const rarities = [
+    { value: "all", label: "전체", color: "gray" },
+    { value: "기본", label: "기본", color: "red" },
+    { value: "Ex", label: "Ex", color: "orange" },
+    { value: "레어", label: "레어", color: "yellow" },
+    { value: "슈퍼레어", label: "슈퍼레어", color: "green" },
+    { value: "울트라슈퍼레어", label: "울트라슈퍼레어", color: "blue" },
+    { value: "레전드레어", label: "레전드레어", color: "purple" },
+  ];
 
-    const effects = [
-        { group: "1", value: "all", label: "전체" },
-        { group: "1", value: "None", label: "없음" },
-        { group: "1", value: "Slow", label: "움직임을 느리게 한다" },
-        { group: "1", value: "Stop", label: "움직임을 멈춘다" },
-        { group: "1", value: "Knockback", label: "날려버린다" },
-        { group: "1", value: "Weak", label: "공격력다운" },
+  const targets = [
+    { value: "all", label: "전체", color: "gray" },
+    { value: "Red", label: "빨간적", color: "red" },
+    { value: "Floating", label: "떠있는적", color: "green" },
+    { value: "Black", label: "검은적", color: "black" },
+    { value: "Metal", label: "메탈적", color: "slate" },
+    { value: "Angel", label: "천사", color: "yellow" },
+    { value: "Alien", label: "에이리언", color: "sky" },
+    { value: "Zombie", label: "좀비", color: "purple" },
+    { value: "Relic", label: "고대종", color: "emerald" },
+    { value: "Demon", label: "악마", color: "blue-900" },
+    { value: "White", label: "무속성", color: "stone" },
+  ];
 
-        { group: "2", value: "MassiveDamage", label: "초 데미지" },
-        { group: "2", value: "InsaneDamage", label: "극 데미지" },
-        { group: "2", value: "Good", label: "엄청 강하다" },
-        { group: "2", value: "Resistant", label: "맷집이 좋다" },
-        { group: "2", value: "InsanelyTough", label: "초 맷집이 좋다" },
-        { group: "2", value: "Curse", label: "저주" },
-        { group: "2", value: "ImuATK", label: "공격 무효" },
-        { group: "2", value: "Only", label: "공격 타겟 한정" },
-        { group: "2", value: "Warp", label: "워프무효" },
-    ];
+  const effects = [
+    { group: "1", value: "all", label: "전체" },
+    { group: "1", value: "Slow", label: "느리게 한다" },
+    { group: "1", value: "Stop", label: "멈춘다" },
+    { group: "1", value: "Knockback", label: "날려버린다" },
+    { group: "1", value: "Weak", label: "공격력 다운" },
 
+    { group: "2", value: "MassiveDamage", label: "초 데미지" },
+    { group: "2", value: "InsaneDamage", label: "극 데미지" },
+    { group: "2", value: "Good", label: "엄청 강하다" },
+    { group: "2", value: "Resistant", label: "맷집 좋다" },
+    { group: "2", value: "InsanelyTough", label: "초 맷집" },
+    { group: "2", value: "Curse", label: "저주" },
+    { group: "2", value: "ImuATK", label: "공격 무효" },
+    { group: "2", value: "Only", label: "타겟 한정" },
+  ];
 
     const abilities = [
         { group: "1", value: "all", label: "전체" },
@@ -100,11 +103,6 @@ export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
         { group: "3", value: "Blast", label: "폭파 공격" },
         { group: "3", value: "WaveBlocker", label: "파동스토퍼" },
         { group: "3", value: "Summon", label: "소환" },
-
-        { group: "3", value: "single", label: "개체공격" },
-        { group: "3", value: "aoe", label: "범위공격" },
-        { group: "3", value: "ld", label: "원거리공격" },
-        { group: "3", value: "omni", label: "전방위공격" },
 
         { group: "4", value: "ColosusSlayer", label: "초생명체 특효" },
         { group: "4", value: "BehemothSlayer", label: "초수 특효" },
@@ -140,228 +138,231 @@ export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
         { group: "7", value: "tba_down", label: "공격 간격 단축" },
     ];
 
+  const attackTypes = [
+    { value: "all", label: "전체", color: "gray" },
+    { value: "single", label: "단일 공격", color: "blue" },
+    { value: "range", label: "범위 공격", color: "green" },
+    { value: "long", label: "원거리 공격", color: "purple" },
+    { value: "omni", label: "전방위 공격", color: "red" },
+  ];
 
+  /* -------------------------- toggle -------------------------- */
 
-    /* --------------------------- 필터 토글 --------------------------- */
-    const toggleMulti = (value: string, setter: any) => {
-        setter((prev: string[]) => {
-            if (value === "all") return ["all"];
+  const toggleMulti = (value: string, setter: any) => {
+    setter((prev: string[]) => {
+      if (value === "all") return ["all"];
 
-            const withoutAll = prev.filter((v) => v !== "all");
+      const cleaned = prev.filter((v) => v !== "all");
 
-            if (withoutAll.includes(value)) {
-                const next = withoutAll.filter((v) => v !== value);
-                return next.length === 0 ? ["all"] : next;
-            }
-
-            return [...withoutAll, value];
-        });
-    };
-
-    /* --------------------------- 필터 통과 로직 --------------------------- */
-
-    /* --------------------------- 필터 적용 로직 --------------------------- */
-
-    const filteredCats = cats.filter((cat) => {
-        // 검색: 이름(한글/영문)
-        const matchesSearch =
-            cat.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (cat.Descriptiont ?? "").includes(searchTerm);
-
-        // 등급
-        const matchesRarity =
-            selectedRarity.includes("all") ||
-            selectedRarity.includes(cat.Rarity);
-
-        // 타겟 속성 (Targets[])
-        const matchesTarget =
-            selectedTargets.includes("all") ||
-            (targetFilterMode === "OR"
-                ? selectedTargets.some((t) => cat.Targets.includes(t as any))
-                : selectedTargets.every((t) => cat.Targets.includes(t as any)));
-
-        // 효과 (Affects[])
-        const matchesEffect =
-            selectedEffects.includes("all") ||
-            (effectFilterMode === "OR"
-                ? selectedEffects.some((e) => cat.Affects.includes(e as any))
-                : selectedEffects.every((e) => cat.Affects.includes(e as any)));
-
-        // 능력 (Abilities[])
-        const matchesAbility =
-            selectedAbilities.includes("all") ||
-            (abilityFilterMode === "OR"
-                ? selectedAbilities.some((ab) => cat.Abilities.includes(ab as any))
-                : selectedAbilities.every((ab) => cat.Abilities.includes(ab as any)));
-
-        return (
-            matchesSearch &&
-            matchesRarity &&
-            matchesTarget &&
-            matchesEffect &&
-            matchesAbility
-        );
+      if (cleaned.includes(value)) {
+        const next = cleaned.filter((v) => v !== value);
+        return next.length === 0 ? ["all"] : next;
+      }
+      return [...cleaned, value];
     });
+  };
 
+  /* -------------------------- 필터 적용 -------------------------- */
 
-    /* --------------------------- 색상 유틸 — 실제 코드 다시 삽입 --------------------------- */
+  const filteredCats = cats.filter((cat) => {
+    const matchesSearch =
+      cat.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cat.Descriptiont ?? "").includes(searchTerm);
 
-    const getColorClasses = (color: string, isSelected: boolean) => {
-        const colorMap: Record<string, { selected: string; hover: string }> = {
-            gray: {
-                selected: "bg-gray-500 text-white border-gray-500",
-                hover: "hover:bg-gray-100 hover:border-gray-400",
-            },
-            red: {
-                selected: "bg-red-500 text-white border-red-500",
-                hover: "hover:bg-red-100 hover:border-red-400",
-            },
-            orange: {
-                selected: "bg-orange-500 text-white border-orange-500",
-                hover: "hover:bg-orange-100 hover:border-orange-400",
-            },
-            yellow: {
-                selected: "bg-yellow-500 text-white border-yellow-500",
-                hover: "hover:bg-yellow-100 hover:border-yellow-400",
-            },
-            green: {
-                selected: "bg-green-500 text-white border-green-500",
-                hover: "hover:bg-green-100 hover:border-green-400",
-            },
-            blue: {
-                selected: "bg-blue-500 text-white border-blue-500",
-                hover: "hover:bg-blue-100 hover:border-blue-400",
-            },
-            purple: {
-                selected: "bg-purple-500 text-white border-purple-500",
-                hover: "hover:bg-purple-100 hover:border-purple-400",
-            },
-            sky: {
-                selected: "bg-sky-500 text-white border-sky-500",
-                hover: "hover:bg-sky-100 hover:border-sky-400",
-            },
-            slate: {
-                selected: "bg-slate-500 text-white border-slate-500",
-                hover: "hover:bg-slate-100 hover:border-slate-400",
-            },
-            zinc: {
-                selected: "bg-zinc-800 text-white border-zinc-800",
-                hover: "hover:bg-zinc-100 hover:border-zinc-400",
-            },
-            stone: {
-                selected: "bg-stone-400 text-white border-stone-400",
-                hover: "hover:bg-stone-100 hover:border-stone-400",
-            },
-            black: {
-                selected: "bg-black text-white border-black",
-                hover: "hover:bg-zinc-100 hover:border-zinc-400",
-            },
-            emerald: {
-                selected: "bg-emerald-600 text-white border-emerald-600",
-                hover: "hover:bg-emerald-100 hover:border-emerald-400",
-            },
-            "blue-900": {
-                selected: "bg-blue-900 text-white border-blue-900",
-                hover: "hover:bg-blue-100 hover:border-blue-400",
-            },
-        };
+    const matchesRarity =
+      selectedRarity.includes("all") || selectedRarity.includes(cat.Rarity);
 
-        const colors = colorMap[color] || colorMap.gray;
-        return isSelected
-            ? colors.selected
-            : `bg-white border-gray-300 ${colors.hover}`;
-    };
+    const matchesTarget =
+      selectedTargets.includes("all") ||
+      (targetFilterMode === "OR"
+        ? selectedTargets.some((t) => cat.Targets.includes(t as any))
+        : selectedTargets.every((t) => cat.Targets.includes(t as any)));
 
-    const getRarityColor = (rarity: string): string => {
-        const styleMap: Record<string, string> = {
-            "기본": "bg-gray-400 text-white",
-            "EX": "bg-yellow-300 text-black",
-            "레어": "bg-blue-500 text-white",
-            "슈퍼레어": "bg-green-500 text-white",
-            "울트라슈퍼레어": "bg-red-600 text-white",
-            "레전드레어": "bg-purple-800 text-white",
-        };
+    const matchesEffect =
+      selectedEffects.includes("all") ||
+      (effectFilterMode === "OR"
+        ? selectedEffects.some((e) => cat.Affects.includes(e as any))
+        : selectedEffects.every((e) => cat.Affects.includes(e as any)));
 
-        return styleMap[rarity] ?? "bg-gray-300 text-black";
-    };
-    
-    const getTargetColor = (target: string | undefined) => {
-        const colors: Record<string, string> = {
-            "Red": "bg-red-500 text-white",
-            "Floating": "bg-green-500 text-white",
-            Black: "bg-black text-white",
-            Metal: "bg-slate-400 text-white",
-            Angel: "bg-yellow-300 text-black",
-            Alien: "bg-sky-400 text-white",
-            Zombie: "bg-purple-600 text-white",
-            Relic: "bg-emerald-700 text-white",
-            Demon: "bg-blue-900 text-white",
-            White: "bg-stone-400 text-black",
-        };
-        return colors[target || "없음"] || "bg-gray-200 text-gray-600";
-    };
+    const matchesAbility =
+      selectedAbilities.includes("all") ||
+      (abilityFilterMode === "OR"
+        ? selectedAbilities.some((a) => cat.Abilities.includes(a as any))
+        : selectedAbilities.every((a) => cat.Abilities.includes(a as any)));
 
-    const getEffectColor = (effect: string | undefined) => {
-        const colors: Record<string, string> = {
-            느리게한다: "bg-blue-500 text-white",
-            멈추게한다: "bg-red-500 text-white",
-            공격력다운: "bg-orange-500 text-white",
-            없음: "bg-gray-200 text-gray-600",
-        };
-        return colors[effect || "없음"] || "bg-gray-200 text-gray-600";
-    };
-
-    /* --------------------------- 렌더 --------------------------- */
+    const matchesAttackType =
+      selectedAttackTypes.includes("all") ||
+      (attackTypeFilterMode === "OR"
+        ? selectedAttackTypes.some((t) => cat.AttackType.includes(t as any))
+        : selectedAttackTypes.every((t) => cat.AttackType.includes(t as any)));
 
     return (
-        <div className="space-y-6">
-            <FiltersPanel
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                rarities={rarities}
-                selectedRarity={selectedRarity}
-                setSelectedRarity={setSelectedRarity}
-                targets={targets}
-                selectedTargets={selectedTargets}
-                setSelectedTargets={setSelectedTargets}
-                targetFilterMode={targetFilterMode}
-                setTargetFilterMode={setTargetFilterMode}
-                effects={effects}
-                selectedEffects={selectedEffects}
-                setSelectedEffects={setSelectedEffects}
-                effectFilterMode={effectFilterMode}
-                setEffectFilterMode={setEffectFilterMode}
-                abilities={abilities}
-                selectedAbilities={selectedAbilities}
-                setSelectedAbilities={setSelectedAbilities}
-                abilityFilterMode={abilityFilterMode}
-                setAbilityFilterMode={setAbilityFilterMode}
-                getColorClasses={getColorClasses}
-                toggleMulti={toggleMulti}
-            />
-
-            <CatsTable
-                cats={filteredCats}
-                onSelect={(cat) => {
-                    setSelectedCat(cat);
-                    setCurrentLevel(30);
-                    setIsDialogOpen(true);
-                }}
-                getRarityColor={getRarityColor}
-                getTargetColor={getTargetColor}
-                getEffectColor={getEffectColor}
-            />
-
-            <CatDetailDialog
-                isOpen={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                selectedCat={selectedCat}
-                currentLevel={currentLevel}
-                setCurrentLevel={setCurrentLevel}
-                getRarityColor={getRarityColor}
-                getTargetColor={getTargetColor}
-                getEffectColor={getEffectColor}
-            />
-        </div>
+      matchesSearch &&
+      matchesRarity &&
+      matchesTarget &&
+      matchesEffect &&
+      matchesAbility &&
+      matchesAttackType
     );
+  });
+
+  /* -------------------------- 색상 유틸 Enemy 페이지 동일 -------------------------- */
+
+  const getColorClasses = (color: string, isSelected: boolean) => {
+    const map: Record<string, { selected: string; hover: string }> = {
+      gray: {
+        selected: "bg-gray-500 text-white border-gray-500",
+        hover: "hover:bg-gray-100 hover:border-gray-400",
+      },
+      red: {
+        selected: "bg-red-500 text-white border-red-500",
+        hover: "hover:bg-red-100 hover:border-red-400",
+      },
+      orange: {
+        selected: "bg-orange-500 text-white border-orange-500",
+        hover: "hover:bg-orange-100 hover:border-orange-400",
+      },
+      yellow: {
+        selected: "bg-yellow-500 text-white border-yellow-500",
+        hover: "hover:bg-yellow-100 hover:border-yellow-400",
+      },
+      green: {
+        selected: "bg-green-500 text-white border-green-500",
+        hover: "hover:bg-green-100 hover:border-green-400",
+      },
+      blue: {
+        selected: "bg-blue-500 text-white border-blue-500",
+        hover: "hover:bg-blue-100 hover:border-blue-400",
+      },
+      purple: {
+        selected: "bg-purple-500 text-white border-purple-500",
+        hover: "hover:bg-purple-100 hover:border-purple-400",
+      },
+      sky: {
+        selected: "bg-sky-500 text-white border-sky-500",
+        hover: "hover:bg-sky-100 hover:border-sky-400",
+      },
+      slate: {
+        selected: "bg-slate-500 text-white border-slate-500",
+        hover: "hover:bg-slate-100 hover:border-slate-400",
+      },
+      stone: {
+        selected: "bg-stone-400 text-white border-stone-400",
+        hover: "hover:bg-stone-100 hover:border-stone-400",
+      },
+      black: {
+        selected: "bg-black text-white border-black",
+        hover: "hover:bg-zinc-100 hover:border-zinc-400",
+      },
+      emerald: {
+        selected: "bg-emerald-600 text-white border-emerald-600",
+        hover: "hover:bg-emerald-100 hover:border-emerald-400",
+      },
+      "blue-900": {
+        selected: "bg-blue-900 text-white border-blue-900",
+        hover: "hover:bg-blue-100 hover:border-blue-400",
+      },
+    };
+
+    const c = map[color] ?? map.gray;
+
+    return isSelected
+      ? c.selected
+      : `bg-white border-gray-300 ${c.hover}`;
+  };
+
+  const getRarityColor = (rarity: string) => {
+    const map: Record<string, string> = {
+      기본: "bg-gray-400 text-white",
+      EX: "bg-yellow-300 text-black",
+      레어: "bg-blue-500 text-white",
+      슈퍼레어: "bg-green-500 text-white",
+      울트라슈퍼레어: "bg-red-600 text-white",
+      레전드레어: "bg-purple-800 text-white",
+    };
+
+    return map[rarity] ?? "bg-gray-300 text-black";
+  };
+
+  const getTargetColor = (target: string) => {
+    const map: Record<string, string> = {
+      Red: "bg-red-500 text-white",
+      Floating: "bg-green-500 text-white",
+      Black: "bg-black text-white",
+      Metal: "bg-slate-400 text-white",
+      Angel: "bg-yellow-300 text-black",
+      Alien: "bg-sky-400 text-white",
+      Zombie: "bg-purple-600 text-white",
+      Relic: "bg-emerald-700 text-white",
+      Demon: "bg-blue-900 text-white",
+      White: "bg-stone-400 text-black",
+    };
+    return map[target] ?? "bg-gray-200 text-gray-600";
+  };
+
+  const getEffectColor = (effect: string) => {
+    const map: Record<string, string> = {
+      느리게한다: "bg-blue-500 text-white",
+      멈춘다: "bg-red-500 text-white",
+      공격력다운: "bg-orange-500 text-white",
+    };
+    return map[effect] ?? "bg-gray-200 text-gray-600";
+  };
+
+  return (
+    <div className="space-y-6">
+      <FiltersPanel
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        rarities={rarities}
+        selectedRarity={selectedRarity}
+        setSelectedRarity={setSelectedRarity}
+        targets={targets}
+        selectedTargets={selectedTargets}
+        setSelectedTargets={setSelectedTargets}
+        targetFilterMode={targetFilterMode}
+        setTargetFilterMode={setTargetFilterMode}
+        effects={effects}
+        selectedEffects={selectedEffects}
+        setSelectedEffects={setSelectedEffects}
+        effectFilterMode={effectFilterMode}
+        setEffectFilterMode={setEffectFilterMode}
+        abilities={abilities}
+        selectedAbilities={selectedAbilities}
+        setSelectedAbilities={setSelectedAbilities}
+        abilityFilterMode={abilityFilterMode}
+        setAbilityFilterMode={setAbilityFilterMode}
+        attackTypes={attackTypes}
+        selectedAttackTypes={selectedAttackTypes}
+        setSelectedAttackTypes={setSelectedAttackTypes}
+        attackTypeFilterMode={attackTypeFilterMode}
+        setAttackTypeFilterMode={setAttackTypeFilterMode}
+        getColorClasses={getColorClasses}
+        toggleMulti={toggleMulti}
+      />
+
+      <CatsTable
+        cats={filteredCats}
+        onSelect={(cat) => {
+          setSelectedCat(cat);
+          setCurrentLevel(30);
+          setIsDialogOpen(true);
+        }}
+        getRarityColor={getRarityColor}
+        getTargetColor={getTargetColor}
+        getEffectColor={getEffectColor}
+      />
+
+      <CatDetailDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        selectedCat={selectedCat}
+        currentLevel={currentLevel}
+        setCurrentLevel={setCurrentLevel}
+        getRarityColor={getRarityColor}
+        getTargetColor={getTargetColor}
+        getEffectColor={getEffectColor}
+      />
+    </div>
+  );
 }

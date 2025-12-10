@@ -189,7 +189,7 @@ function getEnemyAttackTypes(v: number[]): attackType[] {
   if (ldr !== 0) out.push(ldr < 0 ? "omni" : "long");
 
   if (out.length === 0) out.push("single");
-
+  console.log(out);
   return out;
 }
 

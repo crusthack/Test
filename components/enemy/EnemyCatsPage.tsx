@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Enemy } from "@/types/enemy";
 
-import EnemyFiltersPanel from "./FiltersPanelEnemy";
+import EnemyFiltersPanel from "./EnemyFiltersPanel";
 import EnemiesTable from "./EnemiesTable";
 import EnemyDetailDialog from "./EnemyDetailDialog";
 
@@ -14,15 +14,16 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
   const [attributeFilterMode, setAttributeFilterMode] = useState<"OR" | "AND">("OR");
 
   const [selectedEffects, setSelectedEffects] = useState<string[]>(["all"]);
-  const [effectFilterMode, setEffectFilterMode] = useState<"OR" | "AND">("OR");
+  const [effectFilterMode, setEffectFilterMode] = useState<"OR" | "AND">("AND");
+
+  const [selectedAttackTypes, setSelectedAttackTypes] = useState<string[]>(["all"]);
+  const [attackTypeFilterMode, setAttackTypeFilterMode] = useState<"OR" | "AND">("AND");
 
   const [selectedAbilities, setSelectedAbilities] = useState<string[]>(["all"]);
-  const [abilityFilterMode, setAbilityFilterMode] = useState<"OR" | "AND">("OR");
+  const [abilityFilterMode, setAbilityFilterMode] = useState<"OR" | "AND">("AND");
 
   const [selectedEnemy, setSelectedEnemy] = useState<Enemy | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentMagnification, setCurrentMagnification] = useState(100);
-
 
   /* ------------------ 필터 옵션 ------------------ */
 
@@ -40,28 +41,17 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
     { value: 'White', label: '무속성', color: 'stone' }
   ];
 
-  // export type affect =
-  //   | "Knockback"       // 20 날려버린다 확률
-  //   | "Stop"            // 21 멈춘다 확률 22 - 시간
-  //   | "Slow"            // 23 느리게한다 확률 24 - 시간
-  //   | "Weak"            // 29 공다 확률 38 시간 30 배율
-  //   | "Curse"           // 73 고대의 저주 확률 74 - 시간
-  //   | "Warp"            // 65 워프  66 워프 시간 67, 68 워프거리(2개 있는 이유 모르겟음 다 값 같은데) 워프거리가 음수면 역워프
-  //   | "rWarp"
-  //   | "ImuATK"          // 84 공격무효 확률
-  //   | "Poison"          // 독 공격
-  //   ;
   const effects = [
     { group: "1", value: "all", label: "전체" },
-    { group: "1", value: "Slow", label: "움직임을 느리게 한다" },
-    { group: "1", value: "Stop", label: "움직임을 멈춘다" },
+    { group: "1", value: "Slow", label: "느리게 한다" },
+    { group: "1", value: "Stop", label: "멈춘다" },
     { group: "1", value: "Knockback", label: "날려버린다" },
-    { group: "1", value: "Weak", label: "공격력다운" },
+    { group: "1", value: "Weak", label: "공격력 다운" },
     { group: "1", value: "Curse", label: "저주" },
     { group: "1", value: "ImuATK", label: "공격 무효" },
     { group: "1", value: "Warp", label: "워프" },
     { group: "1", value: "rWarp", label: "역워프" },
-    { group: "1", value: "Poision", label: "독공격" },
+    { group: "1", value: "Poison", label: "독공격" },
   ];
 
   const abilities = [
@@ -71,8 +61,8 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
     { group: "1", value: "BaseDestroyer", label: "성 파괴가 특기" },
     { group: "1", value: "Critical", label: "크리티컬" },
     { group: "1", value: "StrickAttack", label: "혼신의 일격" },
-    { group: "1", value: "Glass", label: "유리" },
-    
+    { group: "1", value: "Glass", label: "유리공격" },
+
     { group: "2", value: "MiniWave", label: "소파동" },
     { group: "2", value: "Wave", label: "파동 공격" },
     { group: "2", value: "MiniVolcano", label: "소열파" },
@@ -86,12 +76,6 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
     { group: "2", value: "Burrow", label: "버로우" },
     { group: "2", value: "Rebirth", label: "부활" },
 
-
-    { group: "3", value: "single", label: "개체공격" },
-    { group: "3", value: "aoe", label: "범위공격" },
-    { group: "3", value: "ld", label: "원거리공격" },
-    { group: "3", value: "omni", label: "전방위공격" },
-
     { group: "4", value: "Colosus", label: "초생명체" },
     { group: "4", value: "Behemoth", label: "초수" },
     { group: "4", value: "Sage", label: "초현자" },
@@ -99,12 +83,21 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
     { group: "5", value: "ImuWeak", label: "공격력 다운 무효" },
     { group: "5", value: "ImuKB", label: "날려버린다 무효" },
     { group: "5", value: "ImuStop", label: "멈춘다 무효" },
-    { group: "5", value: "ImuSlow", label: "움직임을 느리게 한다 무효" },
+    { group: "5", value: "ImuSlow", label: "느리게 무효" },
     { group: "5", value: "ImuWarp", label: "워프 무효" },
     { group: "5", value: "ImuCurse", label: "저주 무효" },
     { group: "5", value: "ImuWave", label: "파동 무효" },
     { group: "5", value: "ImuVolcano", label: "열파 무효" },
     { group: "5", value: "ImuBlast", label: "폭파 무효" },
+  ];
+
+  /* ⭐ AttackType 필터 옵션 */
+  const attackTypes = [
+    { value: "all", label: "전체", color: "gray" },
+    { value: "single", label: "단일 공격", color: "blue" },
+    { value: "range", label: "범위 공격", color: "green" },
+    { value: "long", label: "원거리 공격", color: "purple" },
+    { value: "omni", label: "전방위 공격", color: "red" },
   ];
 
   /* ------------------ 토글 유틸 ------------------ */
@@ -148,8 +141,20 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
         ? selectedAbilities.some((v) => enemy.Abilities.includes(v as any))
         : selectedAbilities.every((v) => enemy.Abilities.includes(v as any)));
 
+    // ⭐ AttackType 필터
+    const matchesAttackType =
+      selectedAttackTypes.includes("all") ||
+      (attackTypeFilterMode === "OR"
+        ? selectedAttackTypes.some((v) => enemy.AttackType.includes(v as any))
+        : selectedAttackTypes.every((v) => enemy.AttackType.includes(v as any)));
 
-    return matchesSearch && matchesAttribute && matchesEffect && matchesAbility;
+    return (
+      matchesSearch &&
+      matchesAttribute &&
+      matchesEffect &&
+      matchesAbility &&
+      matchesAttackType
+    );
   });
 
   /* ------------------ 색상 유틸 ------------------ */
@@ -165,30 +170,15 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
       emerald: { selected: "bg-emerald-600 text-white border-emerald-600", hover: "hover:bg-emerald-100 hover:border-emerald-400" },
       cyan: { selected: "bg-cyan-500 text-white border-cyan-500", hover: "hover:bg-cyan-100 hover:border-cyan-400" },
       stone: { selected: "bg-stone-500 text-white border-stone-500", hover: "hover:bg-stone-100 hover:border-stone-400" },
+      blue: { selected: "bg-blue-500 text-white border-blue-500", hover: "hover:bg-blue-100 hover:border-blue-400" },
+      green: { selected: "bg-green-500 text-white border-green-500", hover: "hover:bg-green-100 hover:border-green-400" },
+      red2: { selected: "bg-red-700 text-white border-red-700", hover: "hover:bg-red-100 hover:border-red-400" },
+      purple2: { selected: "bg-purple-700 text-white border-purple-700", hover: "hover:bg-purple-100 hover:border-purple-400" },
     };
 
     const c = colorMap[color] || colorMap.gray;
     return isSelected ? c.selected : `bg-white border-gray-300 ${c.hover}`;
   };
-
-  const getAttributeColor = (attr: string) => ({
-    빨강: "bg-red-500 text-white",
-    떠있음: "bg-sky-500 text-white",
-    메탈: "bg-slate-500 text-white",
-    무속성: "bg-stone-400 text-black",
-    천사: "bg-yellow-400 text-black",
-    흑: "bg-purple-600 text-white",
-    좀비: "bg-emerald-700 text-white",
-    에일리언: "bg-cyan-500 text-white",
-    없음: "bg-gray-200 text-gray-600",
-  }[attr] || "bg-gray-200 text-gray-600");
-
-  const getEffectColor = (effect: string) => ({
-    느리게한다: "bg-blue-500 text-white",
-    멈추게한다: "bg-purple-500 text-white",
-    공격력다운: "bg-orange-500 text-white",
-    없음: "bg-gray-200 text-gray-600",
-  }[effect] || "bg-gray-200 text-gray-600");
 
   return (
     <div className="space-y-6">
@@ -210,6 +200,11 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
         setSelectedAbilities={setSelectedAbilities}
         abilityFilterMode={abilityFilterMode}
         setAbilityFilterMode={setAbilityFilterMode}
+        attackTypes={attackTypes}                       // ⭐ 추가
+        selectedAttackTypes={selectedAttackTypes}
+        setSelectedAttackTypes={setSelectedAttackTypes}
+        attackTypeFilterMode={attackTypeFilterMode}
+        setAttackTypeFilterMode={setAttackTypeFilterMode}
         getColorClasses={getColorClasses}
         toggleMulti={toggleMulti}
       />
@@ -225,7 +220,7 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
       <EnemyDetailDialog
         isOpen={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        enemy={selectedEnemy}               // ✔ 변경됨
+        enemy={selectedEnemy}
       />
     </div>
   );

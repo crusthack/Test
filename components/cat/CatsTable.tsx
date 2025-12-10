@@ -18,8 +18,8 @@ interface Props {
   onSelect: (cat: Cat) => void;
 
   getRarityColor: (rarity: string) => string;
-  getTargetColor: (target: string | undefined) => string;
-  getEffectColor: (effect: string | undefined) => string;
+  getTargetColor: (target: string) => string;
+  getEffectColor: (effect: string) => string;
 }
 
 export default function CatsTable({

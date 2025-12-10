@@ -152,7 +152,7 @@ export function getAbilities(values: number[]): ability[] {
 
     return out;
 }
-
+// isrange 12, ldr 45
 function getAttackTypes(values: number[]): attackType[] {
     const out: attackType[] = [];
     if (values[12] === 1) out.push("range");
