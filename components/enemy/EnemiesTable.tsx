@@ -27,9 +27,44 @@ const affectKo: Record<string, string> = {
   Weak: "공격력 다운",
   Curse: "저주",
   Warp: "워프",
+  rWarp: "역워프",
   ImuATK: "공격 무효",
   Poison: "독 공격",
 };
+
+const abilityKo: Record<string, string> = {
+  Critical: "크리티컬",
+  StrickAttack: "혼신의 일격",
+  Wave: "파동 공격",
+  MiniWave: "소파동",
+  Volcano: "열파 공격",
+  Blast: "폭파 공격",
+  Barrier: "베리어",
+  LETHAL: "살아남는다",
+  AtkUp: "공격력 업",
+  BaseDestroyer: "성 파괴가 특기",
+  Burrow: "버로우",
+  Rebirth: "부활",
+  DevilShield: "악마 실드",
+  DeathVolcano: "순교",
+  Colosus: "초생명체",
+  Behemoth: "초수",
+  Sage: "초현자",
+  VolcanoCounter: "열파 카운터",
+  WaveBlocker: "파동 삭제",
+  Glass: "유리 공격",
+
+  ImuKB: "날려버린다 무효",
+  ImuStop: "멈춘다 무효",
+  ImuSlow: "느리게 한다 무효",
+  ImuWeak: "공격력 다운 무효",
+  ImuWarp: "워프 무효",
+  ImuCurse: "저주 무효",
+  ImuWave: "파동 데미지 무효",
+  ImuVolcano: "열파 데미지 무효",
+  ImuBlast: "폭파 데미지 무효",
+};
+
 
 /* ---------------------- 유틸 ---------------------- */
 
@@ -124,7 +159,7 @@ export default function EnemiesTable({
                   <div className="flex flex-wrap gap-1">
                     {enemy.Abilities.map((ab, i) => (
                       <Badge key={i} variant="outline" className="text-xs">
-                        {ab}
+                        {toKo(abilityKo, ab)}
                       </Badge>
                     ))}
                   </div>
