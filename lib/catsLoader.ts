@@ -12,35 +12,47 @@ const RARE_FILE = "./data/cat/unitbuy.csv";             // 유닛 레어도
 const LV_FILE = "./data/cat/unitlevel.csv";             // 유닛 레벨 정보
 
 // ──────────────────────────────────────────────
-// 유닛 설명 로드
+// 캐시 저장 변수들
+// ──────────────────────────────────────────────
+let cacheNames: Map<number, string[]> | null = null;
+let cacheDescriptions: Map<number, string[]> | null = null;
+let cacheBuyData: Map<number, { rarity: string, maxlevel: number, maxpluslevel: number }> | null = null;
+let cacheLevelData: Map<number, number[]> | null = null;
+let cacheUnits: unit[] | null = null;
+let cachePostFrame: Map<string, number> = new Map(); // key = "id-form"
+
+// ──────────────────────────────────────────────
+// 유닛 설명 로드 + 캐싱
 // ──────────────────────────────────────────────
 function loadDescriptions(): Map<number, string[]> {
+    if (cacheDescriptions) return cacheDescriptions;
+
     const txt = fs.readFileSync(DESC_FILE, "utf8").replace(/\r/g, "");
     const map = new Map<number, string[]>();
 
-    const lines = txt
-        .split("\n")
+    const lines = txt.split("\n")
         .map(l => l.trim())
         .filter(l => l.length > 0);
 
     for (const line of lines) {
         const cols = line.split("\t");
-
         if (cols.length < 2) continue;
 
         const num = parseInt(cols[0]);
         const descList = cols.slice(1).map(s => s.trim());
-
         map.set(num, descList);
     }
 
+    cacheDescriptions = map;
     return map;
 }
 
 // ──────────────────────────────────────────────
-// 유닛 이름 로드
+// 유닛 이름 로드 + 캐싱
 // ──────────────────────────────────────────────
 function loadUnitNames(): Map<number, string[]> {
+    if (cacheNames) return cacheNames;
+
     const txt = fs.readFileSync(NAME_FILE, "utf8").replace(/\r/g, "");
     const map = new Map<number, string[]>();
 
@@ -52,15 +64,15 @@ function loadUnitNames(): Map<number, string[]> {
 
         const num = parseInt(cols[0]);
         const names = cols.slice(1).filter(n => n.length > 0);
-
         map.set(num, names);
     }
 
+    cacheNames = map;
     return map;
 }
 
 // ──────────────────────────────────────────────
-// trait / ability / affect / attackType (기존 그대로)
+// trait / ability / affect / attackType
 // ──────────────────────────────────────────────
 const traitMap: Record<number, trait> = {
     10: "Red",
@@ -75,74 +87,69 @@ const traitMap: Record<number, trait> = {
     96: "Demon",
 };
 
-
 export function getAffects(values: number[]): affect[] {
     const out: affect[] = [];
-    const add = (cond: boolean, name: affect) => { if (cond) out.push(name); };
+    const add = (cond: boolean, name: affect) => cond && out.push(name);
 
-    add(values[27] > 0, "Slow");          // 느리게한다
-    add(values[25] > 0, "Stop");          // 멈춘다
-    add(values[24] > 0, "Knockback");     // 날려버린다
-    add(values[37] > 0, "Weak");          // 공격력 다운
-    add(values[30] > 0, "MassiveDamage"); // 초데미지
-    add(values[81] > 0, "InsaneDamage");  // 극데미지
-    add(values[23] > 0, "Good");          // 엄청 강하다
-    add(values[29] > 0, "Resistant");     // 맷집이 좋다
-    add(values[80] > 0, "InsanelyTough"); // 초맷집이 좋다
-    add(values[92] > 0, "Curse");         // 저주
-    add(values[32] > 0, "Only");          // 공격 타겟 한정
-    add(values[75] > 0, "Warp");          // 워프
-    add(values[84] > 0, "ImuATK");        // 공격무효
+    add(values[27] > 0, "Slow");
+    add(values[25] > 0, "Stop");
+    add(values[24] > 0, "Knockback");
+    add(values[37] > 0, "Weak");
+    add(values[30] > 0, "MassiveDamage");
+    add(values[81] > 0, "InsaneDamage");
+    add(values[23] > 0, "Good");
+    add(values[29] > 0, "Resistant");
+    add(values[80] > 0, "InsanelyTough");
+    add(values[92] > 0, "Curse");
+    add(values[32] > 0, "Only");
+    add(values[75] > 0, "Warp");
+    add(values[84] > 0, "ImuATK");
 
     return out;
 }
 
 export function getAbilities(values: number[]): ability[] {
     const out: ability[] = [];
-    const add = (cond: boolean, name: ability) => { if (cond) out.push(name); };
+    const add = (cond: boolean, name: ability) => cond && out.push(name);
 
-    // 기본 능력
-    add(values[40] > 0, "AtkUp");         // 공격력 업
-    add(values[42] > 0, "LETHAL");        // 살아남는다
-    add(values[34] > 0, "BaseDestroyer"); // 성 파괴
-    add(values[31] > 0, "Critical");      // 크리티컬
-    add(values[112] > 0, "MetalKiller");  // 메탈 킬러
-    add(values[52] > 0, "ZombieKiller");  // 좀비 킬러
-    add(values[98] > 0, "SoulStrike");    // 영혼 공격
-    add(values[70] > 0, "BarrierBreak");  // 베리어 브레이커
-    add(values[95] > 0, "ShieldBreak");   // 실드 브레이커
-    add(values[82] > 0, "StrickAttack");  // 혼신의 일격
-    add(values[33] > 0, "Bounty");        // 격파시 머니 UP
-    add(values[43] > 0, "Metallic");      // 메탈 몸
+    add(values[40] > 0, "AtkUp");
+    add(values[42] > 0, "LETHAL");
+    add(values[34] > 0, "BaseDestroyer");
+    add(values[31] > 0, "Critical");
+    add(values[112] > 0, "MetalKiller");
+    add(values[52] > 0, "ZombieKiller");
+    add(values[98] > 0, "SoulStrike");
+    add(values[70] > 0, "BarrierBreak");
+    add(values[95] > 0, "ShieldBreak");
+    add(values[82] > 0, "StrickAttack");
+    add(values[33] > 0, "Bounty");
+    add(values[43] > 0, "Metallic");
 
-    // 파동·열파·폭파 계열 (주의: 여러 플래그 연동)
-    add(values[94] > 0, "MiniWave");      // 소파동
-    add(values[35] > 0 && values[94] === 0, "Wave"); // 파동 (소파동 아닌 경우)
-    add(values[108] > 0, "MiniVolcano");  // 소열파 (MiniVolcano 플래그)
-    add(values[86] > 0 && values[108] === 0, "Volcano"); // 열파
-    add(values[109] > 0, "VolcanoCounter"); // 열파 카운터
-    add(values[113] > 0, "Blast");        // 폭파
-    add(values[47] > 0, "WaveBlocker");   // 파동 스토퍼
+    add(values[94] > 0, "MiniWave");
+    add(values[35] > 0 && values[94] === 0, "Wave");
 
-    // 소환 계열
-    add(values[110] > 0, "Summon");       // 소환
+    add(values[108] > 0, "MiniVolcano");
+    add(values[86] > 0 && values[108] === 0, "Volcano");
+    add(values[109] > 0, "VolcanoCounter");
+    add(values[113] > 0, "Blast");
 
-    // 초생명체 특효 계열
+    add(values[47] > 0, "WaveBlocker");
+    add(values[110] > 0, "Summon");
     add(values[97] > 0, "ColosusSlayer");
     add(values[105] > 0, "BehemothSlayer");
     add(values[111] > 0, "SageHunter");
 
-    // 무효 계열
     add(values[51] > 0, "ImuWeak");
     add(values[48] > 0, "ImuKB");
     add(values[49] > 0, "ImuStop");
     add(values[50] > 0, "ImuSlow");
-    add(values[75] > 0, "ImuWarp");     // 워프 무효는 워프와 같은 인덱스
+    add(values[75] > 0, "ImuWarp");
     add(values[79] > 0, "ImuCurse");
     add(values[90] > 0, "ImuPoison");
     add(values[46] > 0, "ImuWave");
     add(values[91] > 0, "ImuVolcano");
     add(values[116] > 0, "ImuBlast");
+
     return out;
 }
 
@@ -154,13 +161,22 @@ function getAttackTypes(values: number[]): attackType[] {
     if (ldr !== 0) out.push(ldr < 0 ? "omni" : "long");
 
     if (out.length === 0) out.push("single");
-
     return out;
 }
 
+// ──────────────────────────────────────────────
+// 유닛 레어도 / MaxLevel 데이터
+// ──────────────────────────────────────────────
 function loadUnitBuy(id: number): { rarity: string, maxlevel: number, maxpluslevel: number } {
+    // 캐시 맵 생성
+    if (!cacheBuyData) cacheBuyData = new Map();
+
+    if (cacheBuyData.has(id)) return cacheBuyData.get(id)!;
+
     if (!fs.existsSync(RARE_FILE)) {
-        return { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
+        const def = { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
+        cacheBuyData.set(id, def);
+        return def;
     }
 
     const lines = fs
@@ -171,7 +187,9 @@ function loadUnitBuy(id: number): { rarity: string, maxlevel: number, maxpluslev
 
     const line = lines[id];
     if (!line) {
-        return { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
+        const def = { rarity: "undefined", maxlevel: 0, maxpluslevel: 0 };
+        cacheBuyData.set(id, def);
+        return def;
     }
 
     const values = line.split(",");
@@ -186,43 +204,59 @@ function loadUnitBuy(id: number): { rarity: string, maxlevel: number, maxpluslev
         5: "레전드레어",
     };
 
-    return {
+    const res = {
         rarity: rarityMap[code] ?? "undefined",
         maxlevel: Number(values[50]) || 0,
-        maxpluslevel: Number(values[51]) || 0
+        maxpluslevel: Number(values[51]) || 0,
     };
+
+    cacheBuyData.set(id, res);
+    return res;
 }
 
-function loadUnitLevelData(id:number): number[]{
-    if (!fs.existsSync(LV_FILE)) {
-        return [];
-    }
-    const lines = fs
-        .readFileSync(LV_FILE, "utf8")
+// ──────────────────────────────────────────────
+// 유닛 레벨 데이터
+// ──────────────────────────────────────────────
+function loadUnitLevelData(id: number): number[] {
+    if (!cacheLevelData) cacheLevelData = new Map();
+
+    if (cacheLevelData.has(id)) return cacheLevelData.get(id)!;
+
+    if (!fs.existsSync(LV_FILE)) return [];
+
+    const lines = fs.readFileSync(LV_FILE, "utf8")
         .replace(/\r/g, "")
         .split("\n")
         .filter(l => l.trim().length > 0);
+
     const line = lines[id];
-    return line.split(',').map((a)=>Number(a));
+    const arr = line.split(',').map(n => Number(n));
+
+    cacheLevelData.set(id, arr);
+    return arr;
 }
 
-// 유닛 폴더, f 1진, c 2진, s 3진, u 4진
-function loadPostFRame(id: number, form: number, postFrame:number): number {
-    if(!id || !form) return 0;
-    const formMap: Record<number, string> = {
-    1: "f",
-    2: "c",
-    3: "s",
-    4: "u",
-    };
+// ──────────────────────────────────────────────
+// 애니메이션 후딜 프레임 계산 + 캐싱
+// ──────────────────────────────────────────────
+function loadPostFRame(id: number, form: number, postFrame: number): number {
+    const key = `${id}-${form}`;
+    if (cachePostFrame.has(key)) return cachePostFrame.get(key)!;
 
+    if (!id || !form) return 0;
+
+    const formMap: Record<number, string> = { 1: "f", 2: "c", 3: "s", 4: "u" };
     const c = formMap[form];
+
     const dir = path.join(UNIT_DIR, id.toString().padStart(3, "0"));
     const animPath = path.join(dir, `${id.toString().padStart(3, "0")}_${c}02.maanim`);
-    if(!fs.existsSync(animPath)) return 0;
 
-    const lines = fs
-        .readFileSync(animPath, "utf8")
+    if (!fs.existsSync(animPath)) {
+        cachePostFrame.set(key, 0);
+        return 0;
+    }
+
+    const lines = fs.readFileSync(animPath, "utf8")
         .replace(/\r/g, "")
         .split("\n")
         .filter(l => l.trim().length > 0);
@@ -231,30 +265,30 @@ function loadPostFRame(id: number, form: number, postFrame:number): number {
 
     for (const line of lines) {
         const parts = line.split(",").map(Number);
-
         if (parts.length === 4 && parts.every(n => !isNaN(n))) {
-            const first = parts[0];
-            if (first > maxValue) {
-                maxValue = first;
-            }
+            const f = parts[0];
+            if (f > maxValue) maxValue = f;
         }
     }
-    return maxValue ? maxValue - postFrame + 1 : 0;
+
+    const result = maxValue ? maxValue - postFrame + 1 : 0;
+
+    cachePostFrame.set(key, result);
+    return result;
 }
 
 // ──────────────────────────────────────────────
 // CSV 하나 파싱
 // ──────────────────────────────────────────────
 function loadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): unit | null {
-    const {rarity, maxlevel, maxpluslevel} = loadUnitBuy(num);
+    const { rarity, maxlevel, maxpluslevel } = loadUnitBuy(num);
 
     const dir = path.join(UNIT_DIR, num.toString().padStart(3, "0"));
     const csvPath = path.join(dir, `unit${num.toString().padStart(3, "0")}.csv`);
 
     if (!fs.existsSync(csvPath)) return null;
 
-    const lines = fs
-        .readFileSync(csvPath, "utf8")
+    const lines = fs.readFileSync(csvPath, "utf8")
         .replace(/\r/g, "")
         .split("\n")
         .filter(l => l.trim().length > 0);
@@ -269,21 +303,20 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
 
     const traits: trait[] = [];
     for (const idx in traitMap) {
-        const i = parseInt(idx);
+        const i = Number(idx);
         if (values[i] === 1) traits.push(traitMap[i]);
     }
 
-    // ⬇⬇⬇ 설명 필드 할당
     const descList = descMap.get(num) ?? [];
     const description = descList[form] ?? "";
 
-    const imageurl = `https://battlecats-db.imgs-server.com/u${(num+1).toString().padStart(3, "0")}-${form+1}.png`;
+    const imageurl = `https://battlecats-db.imgs-server.com/u${(num + 1).toString().padStart(3, "0")}-${form + 1}.png`;
 
     return {
         Id: num,
         Name: name,
         Form: form + 1,
-        Descriptiont: description,   // ⭐추가⭐
+        Descriptiont: description,
         Image: imageurl,
         Rarity: rarity,
 
@@ -311,11 +344,11 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
 }
 
 // ──────────────────────────────────────────────
-// 전체 유닛 로드
+// 전체 유닛 로드 + 캐싱
 // ──────────────────────────────────────────────
-let units: unit[] | null = null;
 export function loadAllCats(): unit[] {
-    if(units) return units;
+    if (cacheUnits) return cacheUnits;
+
     const nameMap = loadUnitNames();
     const descMap = loadDescriptions();
 
@@ -327,17 +360,19 @@ export function loadAllCats(): unit[] {
             if (c) arr.push(c);
         }
     }
-    units = arr;
+
+    cacheUnits = arr;
     return arr;
 }
-
 
 // ID에 해당하는 1~4폼 유닛만 골라 반환
 export function loadCatsById(id: number): unit[] {
     const all = loadAllCats();
     return all.filter(c => c.Id === id);
 }
-export function loadEnemiesById (id: number): unit[] {
+
+// 적도 캐싱
+export function loadEnemiesById(id: number): unit[] {
     const all = loadAllEnemies();
     return all.filter(e => e.Id === id);
 }
