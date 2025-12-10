@@ -4,5 +4,5 @@ import CatPage from "@/components/cat/CatPage";
 
 export default async function Page() {
   const cats = await loadAllCats();      // SSR + 파일 읽기
-  return <CatPage cata={cats} />;  // CSR에 데이터 전달
+  return <CatPage cats={cats} />;  // CSR에 데이터 전달
 }

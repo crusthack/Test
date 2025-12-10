@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { loadAllCats } from "@/lib/catsLoader";
+import { useState, useMemo, useCallback } from "react";
 import CatDetailDialog from "@/components/cat/CatDetailDialog";
 import CatsTable from "@/components/cat/CatsTable";
 import UnifiedFiltersPanel from "@/components/common/UnifiedFiltersPanel";
+import { getRarityColor, getTargetColor, getEffectColor } from "@/lib/colorUtils";
 import type { Cat } from "@/types/cat";
 
 const FILTER_RARITY_OPTIONS = [
@@ -110,34 +110,13 @@ const FILTER_ATTACKTYPE_OPTIONS = [
   { value: "omni", label: "전방위 공격", color: "red" as const },
 ];
 
-const RARITY_COLOR_MAP: Record<string, string> = {
-  기본: "bg-gray-400 text-white",
-  EX: "bg-yellow-300 text-black",
-  레어: "bg-blue-500 text-white",
-  슈퍼레어: "bg-green-500 text-white",
-  울트라슈퍼레어: "bg-red-600 text-white",
-  레전드레어: "bg-purple-800 text-white",
-};
-
-const TARGET_COLOR_MAP: Record<string, string> = {
-  Red: "bg-red-500 text-white",
-  Floating: "bg-green-500 text-white",
-  Black: "bg-black text-white",
-  Metal: "bg-slate-400 text-white",
-  Angel: "bg-yellow-300 text-black",
-  Alien: "bg-sky-400 text-white",
-  Zombie: "bg-purple-600 text-white",
-  Relic: "bg-emerald-700 text-white",
-  Demon: "bg-blue-900 text-white",
-  White: "bg-stone-400 text-black",
-};
 
 // ============================================================
 // 클라이언트 컴포넌트
 // ============================================================
 
-export default function CatPage({cata}: {cata: Cat[]}) {
-  const [cats, setCats] = useState<Cat[]>([]);
+export default function CatPage({ cats: initialCats }: { cats: Cat[] }) {
+  const [cats, setCats] = useState<Cat[]>(initialCats ?? []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRarity, setSelectedRarity] = useState<string[]>(["all"]);
@@ -153,18 +132,7 @@ export default function CatPage({cata}: {cata: Cat[]}) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(30);
 
-  // SSR 방지: useEffect에서 데이터 로드
-  useEffect(() => {
-    const loadCats = async () => {
-      try {
-        const loadedCats = await cata;
-        setCats(loadedCats);
-      } catch (error) {
-        console.error("Failed to load cats:", error);
-      }
-    };
-    loadCats();
-  }, []);
+  // `initialCats` comes from the server (no client-side file reads)
 
   const toggleMulti = useCallback(
     (value: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
@@ -180,17 +148,7 @@ export default function CatPage({cata}: {cata: Cat[]}) {
     },
     []
   );
-  const getRarityColor = useCallback((rarity: string): string => {
-    return RARITY_COLOR_MAP[rarity] ?? "bg-gray-300 text-black";
-  }, []);
-
-  const getTargetColor = useCallback((target: string): string => {
-    return TARGET_COLOR_MAP[target] ?? "bg-gray-200 text-gray-600";
-  }, []);
-
-  const getEffectColor = useCallback((effect: string): string => {
-    return "bg-gray-200 text-gray-600";
-  }, []);
+  // Color helpers are provided by `lib/colorUtils`
 
   const filteredCats = useMemo(() => {
     return cats.filter((cat) => {
