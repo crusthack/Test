@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type { unit as Cat } from "@/types/cat";
+import type { Cat as Cat } from "@/types/cat";
 
 interface Props {
   cats: Cat[];

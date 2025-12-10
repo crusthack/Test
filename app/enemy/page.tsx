@@ -1,5 +1,5 @@
 // app/enemy/page.tsx
-import EnemyCatsPage from "./EnemyCatsPage";
+import EnemyCatsPage from "@/components/enemy/EnemyCatsPage";
 import { loadAllEnemies } from "@/lib/enemyLoader";
 
 export const dynamic = "force-static";

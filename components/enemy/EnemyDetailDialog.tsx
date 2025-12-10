@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import type { unit } from "@/types/cat";
+import type { Enemy } from "@/types/enemy";
 import Link from "next/link";
 
 /* ---------- 한글 변환 ---------- */
@@ -86,7 +86,7 @@ export default function EnemyDetailDialog({
 }: {
   isOpen: boolean;
   onOpenChange: (v: boolean) => void;
-  enemy: unit | null;
+  enemy: Enemy | null;
 }) {
   if (!enemy) return null;
   const paddedId = enemy.Id.toString().padStart(3, "0");
@@ -114,11 +114,6 @@ export default function EnemyDetailDialog({
             <div>
               <p className="text-gray-600 mb-1">ID</p>
               <p>{enemy.Id}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-600 mb-1">진화/폼</p>
-              <p>{enemy.Form}</p>
             </div>
           </div>
 
@@ -187,11 +182,6 @@ export default function EnemyDetailDialog({
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-gray-600">공격 간격</p>
                 <p>{enemy.Tba}</p>
-              </div>
-
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-gray-600">재생산</p>
-                <p>{enemy.RespawnHalf}</p>
               </div>
             </div>
           </div>

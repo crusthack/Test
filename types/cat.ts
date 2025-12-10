@@ -1,4 +1,4 @@
-export interface unit {
+export interface Cat {
     Id: number,     // ID (고양이 = 0, 고양이벽 = 1, ...)
     Form: number,   // 진화 단계 (1, 2, 3, 4) 
     Rarity: string, // 등급    기본, Ex, 레어, 슈퍼레어, 울트라슈퍼레어, 레전드레어, undefined

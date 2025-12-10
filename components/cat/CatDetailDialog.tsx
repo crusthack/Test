@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import type { unit as Cat } from "@/types/cat";
+import type { Cat as Cat } from "@/types/cat";
 import Link from "next/link";
 
 interface Props {
@@ -34,8 +34,8 @@ export default function CatDetailDialog({
   getEffectColor,
 }: Props) {
   if (!selectedCat) return null;
-  if(currentLevel < 1) currentLevel = 1;
-  if(currentLevel > selectedCat.MaxLevel + selectedCat.PlusLevel) currentLevel = selectedCat.MaxLevel + selectedCat.PlusLevel;
+  if (currentLevel < 1) currentLevel = 1;
+  if (currentLevel > selectedCat.MaxLevel + selectedCat.PlusLevel) currentLevel = selectedCat.MaxLevel + selectedCat.PlusLevel;
 
   const levelData = selectedCat.levelData;
   /* ------------------- 계산 ------------------- */
@@ -145,7 +145,13 @@ export default function CatDetailDialog({
   const paddedId = selectedCat.Id.toString().padStart(3, "0");
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        forceMount
+        className="
+          max-w-2xl max-h-[90vh] overflow-y-auto
+          !animate-none transition-none
+        "
+      >
         <DialogHeader>
           <div className="flex items-center justify-between">
 

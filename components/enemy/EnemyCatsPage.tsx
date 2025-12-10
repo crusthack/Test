@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { unit as Enemy } from "@/types/cat";
+import type { Enemy } from "@/types/enemy";
 
 import EnemyFiltersPanel from "./FiltersPanelEnemy";
 import EnemiesTable from "./EnemiesTable";
@@ -28,99 +28,83 @@ export default function EnemyCatsPage({ enemies }: { enemies: Enemy[] }) {
 
   const attributes = [
     { value: 'all', label: '전체', color: 'gray' },
-    { value: '빨간적', label: '빨간적', color: 'red' },
-    { value: '떠있는적', label: '떠있는적', color: 'green' },
-    { value: '검은적', label: '검은적', color: 'black' },
-    { value: '메탈적', label: '메탈적', color: 'slate' },
-    { value: '천사', label: '천사', color: 'yellow' },
-    { value: '에이리언', label: '에이리언', color: 'sky' },
-    { value: '좀비', label: '좀비', color: 'purple' },
-    { value: '고대종', label: '고대종', color: 'emerald' },
-    { value: '악마', label: '악마', color: 'blue-900' },
-    { value: '무속성', label: '무속성', color: 'stone' }
+    { value: 'Red', label: '빨간적', color: 'red' },
+    { value: 'Floating', label: '떠있는적', color: 'green' },
+    { value: 'Black', label: '검은적', color: 'black' },
+    { value: 'Metal', label: '메탈적', color: 'slate' },
+    { value: 'Angel', label: '천사', color: 'yellow' },
+    { value: 'Alien', label: '에이리언', color: 'sky' },
+    { value: 'Zombie', label: '좀비', color: 'purple' },
+    { value: 'Relic', label: '고대종', color: 'emerald' },
+    { value: 'Demon', label: '악마', color: 'blue-900' },
+    { value: 'White', label: '무속성', color: 'stone' }
   ];
 
+  // export type affect =
+  //   | "Knockback"       // 20 날려버린다 확률
+  //   | "Stop"            // 21 멈춘다 확률 22 - 시간
+  //   | "Slow"            // 23 느리게한다 확률 24 - 시간
+  //   | "Weak"            // 29 공다 확률 38 시간 30 배율
+  //   | "Curse"           // 73 고대의 저주 확률 74 - 시간
+  //   | "Warp"            // 65 워프  66 워프 시간 67, 68 워프거리(2개 있는 이유 모르겟음 다 값 같은데) 워프거리가 음수면 역워프
+  //   | "rWarp"
+  //   | "ImuATK"          // 84 공격무효 확률
+  //   | "Poison"          // 독 공격
+  //   ;
   const effects = [
-    { group: "1", value: 'all', label: '전체' },
-    { group: "1", value: '없음', label: '없음' },
-    { group: "1", value: '움직임을느리게한다', label: '움직임을 느리게 한다' },
-    { group: "1", value: '움직임을멈춘다', label: '움직임을 멈춘다' },
-    { group: "1", value: '날려버린다', label: '날려버린다' },
-    { group: "1", value: '공격력다운', label: '공격력다운' },
-
-    { group: "2", value: '초데미지', label: '초 데미지' },
-    { group: "2", value: '극데미지', label: '극 데미지' },
-    { group: "2", value: '엄청강하다', label: '엄청 강하다' },
-    { group: "2", value: '맷집이좋다', label: '맷집이 좋다' },
-    { group: "2", value: '초맷집이좋다', label: '초 맷집이 좋다' },
-    { group: "2", value: '저주', label: '저주' },
-    { group: "2", value: '공격무효', label: '공격 무효' },
-    { group: "2", value: '공격타겟한정', label: '공격 타겟 한정' },
-    { group: "2", value: '워프', label: '워프' },
+    { group: "1", value: "all", label: "전체" },
+    { group: "1", value: "Slow", label: "움직임을 느리게 한다" },
+    { group: "1", value: "Stop", label: "움직임을 멈춘다" },
+    { group: "1", value: "Knockback", label: "날려버린다" },
+    { group: "1", value: "Weak", label: "공격력다운" },
+    { group: "1", value: "Curse", label: "저주" },
+    { group: "1", value: "ImuATK", label: "공격 무효" },
+    { group: "1", value: "Warp", label: "워프" },
+    { group: "1", value: "rWarp", label: "역워프" },
+    { group: "1", value: "Poision", label: "독공격" },
   ];
 
   const abilities = [
-    { group: "1", value: '전체', label: '전체' },
-    { group: "1", value: '없음', label: '없음' },
-    { group: "1", value: '공격력 업', label: '공격력 업' },
-    { group: "1", value: '살아남는다', label: '살아남는다' },
-    { group: "1", value: '성 파괴가 특기', label: '성 파괴가 특기' },
-    { group: "1", value: '크리티컬', label: '크리티컬' },
-    { group: "1", value: '메탈 킬러', label: '메탈 킬러' },
-    { group: "1", value: '좀비 킬러', label: '좀비 킬러' },
-    { group: "1", value: '영혼 공격', label: '영혼 공격' },
-    { group: "1", value: '베리어 브레이커', label: '베리어 브레이커' },
-    { group: "1", value: '쉴드 브레이커', label: '쉴드 브레이커' },
-    { group: "1", value: '혼신의 일격', label: '혼신의 일격' },
+    { group: "1", value: "all", label: "전체" },
+    { group: "1", value: "AtkUp", label: "공격력 업" },
+    { group: "1", value: "LETHAL", label: "살아남는다" },
+    { group: "1", value: "BaseDestroyer", label: "성 파괴가 특기" },
+    { group: "1", value: "Critical", label: "크리티컬" },
+    { group: "1", value: "StrickAttack", label: "혼신의 일격" },
+    { group: "1", value: "Glass", label: "유리" },
+    
+    { group: "2", value: "MiniWave", label: "소파동" },
+    { group: "2", value: "Wave", label: "파동 공격" },
+    { group: "2", value: "MiniVolcano", label: "소열파" },
+    { group: "2", value: "Volcano", label: "열파 공격" },
+    { group: "2", value: "VolcanoCounter", label: "열파 카운터" },
+    { group: "2", value: "Blast", label: "폭파 공격" },
+    { group: "2", value: "WaveBlocker", label: "파동스토퍼" },
+    { group: "2", value: "Barrier", label: "베리어" },
+    { group: "2", value: "DevilShield", label: "악마쉴드" },
+    { group: "2", value: "DeathVolcano", label: "순교" },
+    { group: "2", value: "Burrow", label: "버로우" },
+    { group: "2", value: "Rebirth", label: "부활" },
 
-    { group: "2", value: '격파시 머니 up', label: '격파시 머니 up' },
-    { group: "2", value: '메탈', label: '메탈' },
-    { group: "2", value: '소파동', label: '소파동' },
-    { group: "2", value: '파동 공격', label: '파동 공격' },
-    { group: "2", value: '소열파', label: '소열파' },
-    { group: "2", value: '열파 공격', label: '열파 공격' },
-    { group: "2", value: '열파 카운터', label: '열파 카운터' },
-    { group: "2", value: '폭파 공격', label: '폭파 공격' },
-    { group: "2", value: '파동스토퍼', label: '파동스토퍼' },
-    { group: "2", value: '소환', label: '소환' },
 
-    { group: "3", value: '개체공격', label: '개체공격' },
-    { group: "3", value: '범위곻격', label: '범위곻격' },
-    { group: "3", value: '원거리공격', label: '원거리공격' },
-    { group: "3", value: '전방위공격', label: '전방위공격' },
+    { group: "3", value: "single", label: "개체공격" },
+    { group: "3", value: "aoe", label: "범위공격" },
+    { group: "3", value: "ld", label: "원거리공격" },
+    { group: "3", value: "omni", label: "전방위공격" },
 
-    { group: "4", value: '초생명체 특효', label: '초생명체 특효' },
-    { group: "4", value: '초수 특효', label: '초수 특효' },
-    { group: "4", value: '초현자 특효', label: '초현자 특효' },
+    { group: "4", value: "Colosus", label: "초생명체" },
+    { group: "4", value: "Behemoth", label: "초수" },
+    { group: "4", value: "Sage", label: "초현자" },
 
-    { group: "5", value: '공격력 다운 무효', label: '공격력 다운 무효' },
-    { group: "5", value: '날려버린다 무효', label: '날려버린다 무효' },
-    { group: "5", value: '움직임을 멈춘다 무효', label: '움직임을 멈춘다 무효' },
-    { group: "5", value: '움직임을 느리게 한다 무효', label: '움직임을 느리게 한다 무효' },
-    { group: "5", value: '워프 무효', label: '워프 무효' },
-    { group: "5", value: '고대의 저주 무효', label: '고대의 저주 무효' },
-    { group: "5", value: '독 데미지 무효', label: '독 데미지 무효' },
-    { group: "5", value: '파동 데미지 무효', label: '파동 데미지 무효' },
-    { group: "5", value: '열파 데미지 무효', label: '열파 데미지 무효' },
-    { group: "5", value: '폭파 데미지 무효', label: '폭파 데미지 무효' },
-
-    { group: "6", value: '공격력 다운 저항', label: '공격력 다운 저항' },
-    { group: "6", value: '움직임을 멈춘다 저항', label: '움직임을 멈춘다 저항' },
-    { group: "6", value: '움직임을 느리게 한다 저항', label: '움직임을 느리게 한다 저항' },
-    { group: "6", value: '날려버린다 저항', label: '날려버린다 저항' },
-    { group: "6", value: '파동 데미지 저항', label: '파동 데미지 저항' },
-    { group: "6", value: '열파 데미지 저항', label: '열파 데미지 저항' },
-    { group: "6", value: '워프 저항', label: '워프 저항' },
-    { group: "6", value: '고대의 저주 저항', label: '고대의 저주 저항' },
-    { group: "6", value: '독 데미지 저항', label: '독 데미지 저항' },
-
-    { group: "7", value: '기본 체력 업', label: '기본 체력 업' },
-    { group: "7", value: '기본 공격력 업', label: '기본 공격력 업' },
-    { group: "7", value: '이동 속도 업', label: '이동 속도 업' },
-    { group: "7", value: '넉백 횟수 증가', label: '넉백 횟수 증가' },
-    { group: "7", value: '생산 코스트 할인', label: '생산 코스트 할인' },
-    { group: "7", value: '생산 스피드 업', label: '생산 스피드 업' },
-    { group: "7", value: '공격 간격 단축', label: '공격 간격 단축' },
+    { group: "5", value: "ImuWeak", label: "공격력 다운 무효" },
+    { group: "5", value: "ImuKB", label: "날려버린다 무효" },
+    { group: "5", value: "ImuStop", label: "멈춘다 무효" },
+    { group: "5", value: "ImuSlow", label: "움직임을 느리게 한다 무효" },
+    { group: "5", value: "ImuWarp", label: "워프 무효" },
+    { group: "5", value: "ImuCurse", label: "저주 무효" },
+    { group: "5", value: "ImuWave", label: "파동 무효" },
+    { group: "5", value: "ImuVolcano", label: "열파 무효" },
+    { group: "5", value: "ImuBlast", label: "폭파 무효" },
   ];
 
   /* ------------------ 토글 유틸 ------------------ */

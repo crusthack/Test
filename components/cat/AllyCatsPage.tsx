@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ability, unit as Cat } from "@/types/cat";
+import type { ability, Cat as Cat } from "@/types/cat";
 
 import CatDetailDialog from "@/components/cat/CatDetailDialog";
 import CatsTable from "@/components/cat/CatsTable";
@@ -69,7 +69,7 @@ export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
         { group: "2", value: "Curse", label: "저주" },
         { group: "2", value: "ImuATK", label: "공격 무효" },
         { group: "2", value: "Only", label: "공격 타겟 한정" },
-        { group: "2", value: "Warp", label: "워프" },
+        { group: "2", value: "Warp", label: "워프무효" },
     ];
 
 
@@ -89,6 +89,8 @@ export default function AllyCatsPage({ cats }: { cats: Cat[] }) {
         { group: "2", value: "StrickAttack", label: "혼신의 일격" },
         { group: "2", value: "Bounty", label: "격파시 머니 up" },
         { group: "2", value: "Metallic", label: "메탈" },
+        { group: "2", value: "WaveBlocker", label: "파동삭제" },
+
 
         { group: "3", value: "MiniWave", label: "소파동" },
         { group: "3", value: "Wave", label: "파동 공격" },

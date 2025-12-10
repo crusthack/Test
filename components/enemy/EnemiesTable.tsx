@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import Card from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { unit } from "@/types/cat";
+import type { Enemy } from "@/types/enemy";
 
 /* ---------------------- 한글 변환 맵 ---------------------- */
 
@@ -120,8 +120,8 @@ export default function EnemiesTable({
   enemies,
   onSelect,
 }: {
-  enemies: unit[];
-  onSelect: (enemy: unit) => void;
+  enemies: Enemy[];
+  onSelect: (enemy: Enemy) => void;
 }) {
   return (
     <Card className="p-6">
@@ -140,7 +140,7 @@ export default function EnemiesTable({
           <TableBody>
             {enemies.map((enemy) => (
               <TableRow
-                key={`${enemy.Id}-${enemy.Form}`}
+                key={`${enemy.Id}`}
                 className="cursor-pointer hover:bg-gray-50"
                 onClick={() => onSelect(enemy)}
               >
@@ -164,11 +164,13 @@ export default function EnemiesTable({
                 {/* AFFECTS */}
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {enemy.Affects.map((e, i) => (
-                      <Badge key={i} className={getEffectColor(e)}>
+                    {enemy.Affects.map((e, i) => { 
+                      if(e=='rWarp') return null;
+                      return(<Badge key={i} className={getEffectColor(e)}>
                         {toKo(affectKo, e)}
                       </Badge>
-                    ))}
+                    )}
+                    )}
                   </div>
                 </TableCell>
 

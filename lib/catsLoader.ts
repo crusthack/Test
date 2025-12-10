@@ -2,7 +2,7 @@ import { loadAllEnemies } from "./enemyLoader";
 
 import * as fs from "fs";
 import * as path from "path";
-import { unit, trait, attackType, affect, ability } from "@/types/cat";
+import { Cat, trait, attackType, affect, ability } from "@/types/cat";
 
 // 경로 설정
 const UNIT_DIR = "./data/cat/unit";                     // 유닛 스탯
@@ -18,7 +18,7 @@ let cacheNames: Map<number, string[]> | null = null;
 let cacheDescriptions: Map<number, string[]> | null = null;
 let cacheBuyData: Map<number, { rarity: string, maxlevel: number, maxpluslevel: number }> | null = null;
 let cacheLevelData: Map<number, number[]> | null = null;
-let cacheUnits: unit[] | null = null;
+let cacheUnits: Cat[] | null = null;
 let cachePostFrame: Map<string, number> = new Map(); // key = "id-form"
 
 // ──────────────────────────────────────────────
@@ -280,7 +280,7 @@ function loadPostFRame(id: number, form: number, postFrame: number): number {
 // ──────────────────────────────────────────────
 // CSV 하나 파싱
 // ──────────────────────────────────────────────
-function loadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): unit | null {
+function loadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): Cat | null {
     const { rarity, maxlevel, maxpluslevel } = loadUnitBuy(num);
 
     const dir = path.join(UNIT_DIR, num.toString().padStart(3, "0"));
@@ -346,13 +346,13 @@ function loadOneCSV(num: number, form: number, name: string, descMap: Map<number
 // ──────────────────────────────────────────────
 // 전체 유닛 로드 + 캐싱
 // ──────────────────────────────────────────────
-export function loadAllCats(): unit[] {
+export function loadAllCats(): Cat[] {
     if (cacheUnits) return cacheUnits;
 
     const nameMap = loadUnitNames();
     const descMap = loadDescriptions();
 
-    const arr: unit[] = [];
+    const arr: Cat[] = [];
 
     for (const [num, names] of nameMap.entries()) {
         for (let form = 0; form < names.length; form++) {
@@ -366,13 +366,7 @@ export function loadAllCats(): unit[] {
 }
 
 // ID에 해당하는 1~4폼 유닛만 골라 반환
-export function loadCatsById(id: number): unit[] {
+export function loadCatsById(id: number): Cat[] {
     const all = loadAllCats();
     return all.filter(c => c.Id === id);
-}
-
-// 적도 캐싱
-export function loadEnemiesById(id: number): unit[] {
-    const all = loadAllEnemies();
-    return all.filter(e => e.Id === id);
 }

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { loadEnemiesById } from "@/lib/catsLoader";
-import { loadAllEnemies } from "@/lib/enemyLoader";
+import { loadAllEnemies, loadEnemiesById } from "@/lib/enemyLoader";
+import Image from "next/image";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -58,28 +58,26 @@ export default async function EnemyDetailPage({ params }: PageProps) {
                         {/* Form Header */}
                         <div className="bg-gray-200 px-6 py-4 flex justify-between items-center">
                             <div className="text-xl font-bold">
-                                {enemy.Name} — {enemy.Form + 1}단계
-                            </div>
-                            <div className="text-gray-600 text-sm">
-                                Form {enemy.Form}
+                                {enemy.Name}
                             </div>
                         </div>
 
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Left — Image + Description */}
                             <div className="space-y-4">
-                                <div className="bg-gray-50 rounded-xl h-64 flex items-center justify-center">
-                                    {enemy.Image ? (
-                                        <img
-                                            src={enemy.Image}
-                                            alt={enemy.Name}
-                                            className="max-h-56"
-                                        />
-                                    ) : (
-                                        <span className="text-gray-500">
-                                            (이미지 없음)
-                                        </span>
-                                    )}
+                                <div className="bg-gray-50 rounded-xl h-64 relative">
+                                        {enemy.Image ? (
+                                            <Image
+                                                src={enemy.Image}
+                                                alt={enemy.Name}
+                                                fill
+                                                className="object-contain p-4"
+                                            />
+                                        ) : (
+                                            <span className="flex items-center justify-center h-full text-gray-500">
+                                                (이미지 없음)
+                                            </span>
+                                        )}
                                 </div>
 
                                 <div>
@@ -102,10 +100,11 @@ export default async function EnemyDetailPage({ params }: PageProps) {
                                     </div>
                                     <ul className="text-gray-800 text-sm space-y-1">
                                         <li>HP: {enemy.Hp}</li>
+                                        <li>넉백: {enemy.Heatback}</li>
                                         <li>공격력: {enemy.Atk}</li>
                                         <li>사거리: {enemy.Range}</li>
                                         <li>속도: {enemy.Speed}</li>
-                                        <li>재생산: {enemy.RespawnHalf / 2}</li>
+                                        <li>격파시 머니: {enemy.Money}</li>
                                         <li>TBA(공격 간격): {enemy.Tba}</li>
                                         <li>선딜: {enemy.PreAttackFrame}</li>
                                         <li>폭: {enemy.Width}</li>
