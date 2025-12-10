@@ -41,7 +41,19 @@ export default function CatsTable({
           className="cursor-pointer hover:bg-gray-50"
           onClick={() => onSelect(cat)}
         >
-          <TableCell>{cat.Id}</TableCell>
+          <TableCell className="text-center">{cat.Id}</TableCell>
+
+          <TableCell>
+            {cat.Image ? (
+              <img
+                src={cat.Image}
+                alt={cat.Name}
+                className="w-14 w-full h-14 object-contain rounded bg-white"
+              />
+            ) : (
+              <div className="w-14 h-14 bg-gray-100 flex items-center justify-center rounded text-xs text-gray-400">No</div>
+            )}
+          </TableCell>
 
           <TableCell>
             <div className="font-semibold">{cat.Name}</div>
@@ -93,13 +105,14 @@ export default function CatsTable({
         <Table className="w-full table-fixed text-left">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">ID</TableHead>
-              <TableHead className="w-40">이름</TableHead>
-              <TableHead className="w-32">등급</TableHead>
-              <TableHead className="w-48">타겟</TableHead>
-              <TableHead className="w-48">효과</TableHead>
-              <TableHead className="w-60">능력</TableHead>
-            </TableRow>
+                <TableHead className="w-8 text-center">ID</TableHead>
+                <TableHead className="w-20">사진</TableHead>
+                <TableHead className="w-36">이름</TableHead>
+                <TableHead className="w-28">등급</TableHead>
+                <TableHead className="w-48">타겟</TableHead>
+                <TableHead className="w-48">효과</TableHead>
+                <TableHead className="w-52">능력</TableHead>
+              </TableRow>
           </TableHeader>
 
           <TableBody>

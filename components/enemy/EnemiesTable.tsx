@@ -26,7 +26,15 @@ export default function EnemiesTable({
           className="cursor-pointer hover:bg-gray-50"
           onClick={() => onSelect(enemy)}
         >
-          <TableCell>{enemy.Id}</TableCell>
+          <TableCell className="text-center">{enemy.Id}</TableCell>
+
+          <TableCell>
+            {enemy.Image ? (
+              <img src={enemy.Image} alt={enemy.Name} className="w-14 w-full h-14 object-contain rounded bg-white" />
+            ) : (
+              <div className="w-14 h-14 bg-gray-100 flex items-center justify-center rounded text-xs text-gray-400">No</div>
+            )}
+          </TableCell>
 
           <TableCell>
             <div className="font-semibold">{enemy.Name}</div>
@@ -71,16 +79,17 @@ export default function EnemiesTable({
 
   return (
     <Card className="p-6">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto w-full min-w-0">
         <Table className="w-full table-fixed text-left">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">ID</TableHead>
-              <TableHead className="w-40">이름</TableHead>
-              <TableHead className="w-40">속성</TableHead>
-              <TableHead className="w-40">효과</TableHead>
-              <TableHead className="w-60">능력</TableHead>
-            </TableRow>
+                <TableHead className="w-8 text-center">ID</TableHead>
+                <TableHead className="w-20">사진</TableHead>
+                <TableHead className="w-36">이름</TableHead>
+                <TableHead className="w-48">속성</TableHead>
+                <TableHead className="w-48">효과</TableHead>
+                <TableHead className="w-52">능력</TableHead>
+              </TableRow>
           </TableHeader>
 
           <TableBody>
