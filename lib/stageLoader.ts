@@ -12,11 +12,13 @@ const BASE = process.cwd();
 const STAGE_NORMAL_DIR = path.join(BASE, "data/Stage/CH/stageNormal");
 
 // 세계편 (맵 9) 스테이지 csv
-const WORLD_STAGE_DIR = path.join(BASE, "data/Stage/CH/stage");
+const WORLD_NORMAL_STAGE_DIR = path.join(BASE, "data/Stage/CH/stage");
 // 미래편 (맵 4,5,6) 스테이지 csv
-const WORLD_W_STAGE_DIR = path.join(BASE, "data/Stage/CH/stageW");
+const WORLD_ITF_STAGE_DIR = path.join(BASE, "data/Stage/CH/stageW");
 // 우주편 스테이지 csv
-const WORLD_SPACE_DIR = path.join(BASE, "data/Stage/CH/stageSpace");
+const WORLD_COSMOS_DIR = path.join(BASE, "data/Stage/CH/stageSpace");
+// 레전드 스테이지
+const WORLD_LEGEND_STAGE_DIR = path.join(BASE, "data/Stage");
 
 // 이름 파일
 const STAGE_NAME_FILE = path.join(BASE, "data/StageName.txt");
@@ -101,6 +103,11 @@ export function loadStages(): _Stage[] {
       }
     }
   }
+  for(const s of out) {
+    if(s.StoryId === 13){
+      // console.log(s);
+    }
+  }
   return out.filter(s => s.Energy > 0);
 }
 
@@ -116,10 +123,17 @@ function loadEnergyInfo(StoryId: number, MapId: number, StageId: number): number
     else if ([6, 7, 8].includes(MapId)) { // 우주편
       filePath = path.join(STAGE_NORMAL_DIR, `stageNormal1_${MapId - 6}.csv`);
     }
-    else {
-      return 0;
-    }
   }
+  else if( StoryId === 0) { // 레전드 스토리
+    filePath = path.join(WORLD_LEGEND_STAGE_DIR, `/N/MSDN/MapStageDataN_${MapId.toString().padStart(3, "0")}.csv`);
+  }
+  else if( StoryId === 13) { // 신 레전드 스토리
+    filePath = path.join(WORLD_LEGEND_STAGE_DIR, `/A/MSDNA/MapStageDataNA_${MapId.toString().padStart(3, "0")}.csv`);
+  }
+  else if( StoryId === 34) { // 레전드 스토리 0
+    filePath = path.join(WORLD_LEGEND_STAGE_DIR, `/ND/MSDND/MapStageDataND_${MapId.toString().padStart(3, "0")}.csv`);
+  }
+
   if (filePath === "" || !fs.existsSync(filePath)) {
     return 0;
   }
@@ -145,19 +159,25 @@ function loadStageEnemyInfo(StoryId: number, MapId: number, StageId: number): St
   let filePath = "";
   if (StoryId === 3) { // 세계편, 미래편, 우주편
     if (MapId === 9) { // 세계편
-      filePath = path.join(WORLD_STAGE_DIR, `stage${StageId.toString().padStart(2, "0")}.csv`);
+      filePath = path.join(WORLD_NORMAL_STAGE_DIR, `stage${StageId.toString().padStart(2, "0")}.csv`);
     }
     else if ([3, 4, 5].includes(MapId)) { // 미래편
-      filePath = path.join(WORLD_W_STAGE_DIR,
+      filePath = path.join(WORLD_ITF_STAGE_DIR,
         `stageW${(MapId + 1).toString().padStart(2, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
     }
     else if ([6, 7, 8].includes(MapId)) { // 우주편
-      filePath = path.join(WORLD_SPACE_DIR,
+      filePath = path.join(WORLD_COSMOS_DIR,
         `stageSpace${(MapId + 1).toString().padStart(2, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
     }
-    else {
-      return [];
-    }
+  }
+  else if( StoryId === 0) { // 레전드 스토리
+    filePath = path.join(WORLD_LEGEND_STAGE_DIR, `/N/StageRN/stageRN${MapId.toString().padStart(3, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
+  }
+  else if( StoryId === 13) { // 신 레전드 스토리
+    filePath = path.join(WORLD_LEGEND_STAGE_DIR, `/A/StageRNA/stageRNA${MapId.toString().padStart(3, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
+  }
+  else if( StoryId === 34) { // 레전드 스토리 0
+    filePath = path.join(WORLD_LEGEND_STAGE_DIR, `/ND/StageRND/stageRND${MapId.toString().padStart(3, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
   }
   if (filePath === "" || !fs.existsSync(filePath)) {
     return [];
@@ -206,7 +226,7 @@ function loadStageEnemyInfo(StoryId: number, MapId: number, StageId: number): St
       castleHp: e.castle_0,
       timer: e.spawn_0,
     } as StageEnemySpawnData;
-    console.log(out);
+    // console.log(out);
     return out;
   });
 }

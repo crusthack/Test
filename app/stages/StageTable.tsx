@@ -18,27 +18,62 @@ interface StageTableProps {
 	onSelectStage: (s: _Stage) => void;
 }
 
-const mapTypeFromId = (id: number | undefined) => {
-	if (id === 9) return "세계편";
-	if (id === 3) return "미래편 1장";
-	if (id === 4) return "미래편 2장";
-	if (id === 5) return "미래편 3장";
-    if (id === 6) return "우주편 1장";
-    if (id === 7) return "우주편 2장";
-    if (id === 8) return "우주편 3장";
-	if ([11, 12, 13, 14, 15, 16].includes(Number(id))) return "특수편";
+const mapTypeFromId = (sid:number, id: number) => {
+	if(sid===3){
+		if (id === 9) return "세계편";
+		if (id === 3) return "미래편 1장";
+		if (id === 4) return "미래편 2장";
+		if (id === 5) return "미래편 3장";
+		if (id === 6) return "우주편 1장";
+		if (id === 7) return "우주편 2장";
+		if (id === 8) return "우주편 3장";
+	}
+	if(sid===0){
+		return "레전드 스토리";
+	}
+	if(sid===13){
+		return "신 레전드 스토리";
+	}
+	if(sid===34){
+		return "레전드 스토리 0";
+	}
 	return "기타";
 };
 
 export default function StageTable({ stages, enemies, onSelectStage }: StageTableProps) {
-	// ensure 세계편 (MapId === 9) appears first, then sort by StoryId, MapId, StageId
+	// Custom story ordering: 3, 0, 13, 34 (others follow numerically)
+	// If story === 3, map ordering should be: 9, 3, 4, 5, 6, 7, 8
+	const STORY_ORDER = [3, 0, 13, 34];
+	const MAP_ORDER_FOR_3 = [9, 3, 4, 5, 6, 7, 8];
+
 	const sortedStages = [...stages].sort((a, b) => {
-		if ((a.MapId ?? 0) === 9 && (b.MapId ?? 0) !== 9) return -1;
-		if ((b.MapId ?? 0) === 9 && (a.MapId ?? 0) !== 9) return 1;
-		const sa = (a.StoryId ?? 0) - (b.StoryId ?? 0);
-		if (sa !== 0) return sa;
-		const ma = (a.MapId ?? 0) - (b.MapId ?? 0);
-		if (ma !== 0) return ma;
+		const aStory = a.StoryId ?? 0;
+		const bStory = b.StoryId ?? 0;
+
+		const aStoryIdx = STORY_ORDER.indexOf(aStory);
+		const bStoryIdx = STORY_ORDER.indexOf(bStory);
+
+		if (aStoryIdx !== -1 || bStoryIdx !== -1) {
+			if (aStoryIdx === -1) return 1; // a is not in prioritized list -> after
+			if (bStoryIdx === -1) return -1;
+			if (aStoryIdx !== bStoryIdx) return aStoryIdx - bStoryIdx;
+		} else {
+			if (aStory !== bStory) return aStory - bStory;
+		}
+
+		// same story
+		if (aStory === 3 && bStory === 3) {
+			const aMapIdx = MAP_ORDER_FOR_3.indexOf(a.MapId ?? 0);
+			const bMapIdx = MAP_ORDER_FOR_3.indexOf(b.MapId ?? 0);
+			if (aMapIdx !== -1 || bMapIdx !== -1) {
+				if (aMapIdx === -1) return 1;
+				if (bMapIdx === -1) return -1;
+				if (aMapIdx !== bMapIdx) return aMapIdx - bMapIdx;
+			}
+		}
+
+		// fallback to numeric ordering
+		if ((a.MapId ?? 0) !== (b.MapId ?? 0)) return (a.MapId ?? 0) - (b.MapId ?? 0);
 		return (a.StageId ?? 0) - (b.StageId ?? 0);
 	});
 
@@ -49,7 +84,7 @@ export default function StageTable({ stages, enemies, onSelectStage }: StageTabl
 					<TableHeader>
 						<TableRow>
 								<TableHead className="w-14 text-center">맵 번호</TableHead>
-								<TableHead className="w-20">맵 종류</TableHead>
+								<TableHead className="w-28">맵 종류</TableHead>
 								<TableHead className="w-40">스테이지 이름</TableHead>
 								<TableHead className="w-16">통솔력</TableHead>
 								<TableHead>출몰 적</TableHead>
@@ -69,8 +104,10 @@ export default function StageTable({ stages, enemies, onSelectStage }: StageTabl
 								className="cursor-pointer hover:bg-gray-50"
 								onClick={() => onSelectStage(st)}
 							>
-								<TableCell className="text-center">{(st.StageId ?? 0) + 1}</TableCell>
-								<TableCell>{mapTypeFromId(st.MapId)}</TableCell>
+								<TableCell className="text-center">
+									{((st.StoryId === 3) && [9,3,4,5,6,7,8].includes(st.MapId)) ? ((st.StageId ?? 0) + 1) : (st.MapId ?? 0)}
+								</TableCell>
+								<TableCell>{mapTypeFromId(st.StoryId, st.MapId)}</TableCell>
 								<TableCell>
 									<div className="font-semibold">{st.StageName ?? st.StageName}</div>
 								</TableCell>

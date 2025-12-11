@@ -26,17 +26,22 @@ export default function StageFilters({
 			/>
 
 			<Card className="p-6">
-				<div className="space-y-4">
-					<div>
-						<h3 className="mb-2">맵 종류</h3>
+				<div className="w-full flex flex-col sm:flex-row sm:items-center gap-4 h-10">
+					<div className="justify-start">
 						<div className="flex gap-2 flex-wrap">
-							{["all", "세계편", "미래편", "우주편"].map((m) => (
+							{[
+								"all",
+								"세계편",
+								"미래편",
+								"우주편",
+								"레전드 스토리",
+								"신 레전드 스토리",
+								"레전드 스토리 0",
+							].map((m) => (
 								<button
 									key={m}
 									onClick={() => setMapType(m)}
-									className={`px-4 py-2 rounded-lg border ${
-										mapType === m ? "bg-green-500 text-white" : ""
-									}`}
+									className={`px-4 py-2 rounded-lg border ${mapType === m ? "bg-green-500 text-white" : ""}`}
 								>
 									{m}
 								</button>
@@ -44,20 +49,19 @@ export default function StageFilters({
 						</div>
 					</div>
 
-					<div>
-						<h3 className="mb-2">장</h3>
-						<div className="flex gap-2 flex-wrap">
-							{["all", "1장", "2장", "3장"].map((m) => (
-								<button
-									key={m}
-									onClick={() => setChapter(m)}
-									className={`px-4 py-2 rounded-lg border ${
-										chapter === m ? "bg-blue-500 text-white" : ""
-									}`}
-								>
-									{m}
-								</button>
-							))}
+					<div className="flex justify-start p-10 ">
+						<div>
+							<div className="flex gap-2 flex-wrap justify-end">
+								{["all", "1장", "2장", "3장"].map((m) => (
+									<button
+										key={m}
+										onClick={() => setChapter(m)}
+										className={`px-4 py-2 rounded-lg border ${chapter === m ? "bg-blue-500 text-white" : ""}`}
+									>
+										{m}
+									</button>
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
