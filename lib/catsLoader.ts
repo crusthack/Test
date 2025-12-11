@@ -148,6 +148,10 @@ export function getAbilities(values: number[]): ability[] {
     add(values[91] > 0, "ImuVolcano");
     add(values[116] > 0, "ImuBlast");
 
+    add(values[77] > 0, "EKILL");
+    add(values[53] > 0, "WKILL");
+
+    
     return out;
 }
 // isrange 12, ldr 45

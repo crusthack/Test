@@ -80,6 +80,8 @@ export const ABILITY_KO: Record<string, string> = {
   Behemoth: "초수",
   Sage: "초현자",
   Glass: "유리 공격",
+  EKILL: "사도 킬러",
+  WKILL: "마녀 킬러",
 };
 
 export const toKo = (map: Record<string, string>, key: string): string =>

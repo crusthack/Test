@@ -107,6 +107,8 @@ export type ability =
   | "WarpResist"    // 워프저항
   | "CurseResist"   // 저주저항
   | "PoisonResist"  // 독저항
+  | "EKILL"       // 사도킬러
+  | "WKILL"     // 마녀킬러
   ;
 // 범위공격 - [12]인거 같음, 
 // 원거리 공격 - [44]가 시작 범위, [45]가 공격범위 -> 사거리는 44 ~ 44 + 45
