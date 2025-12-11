@@ -334,6 +334,9 @@ export function loadAllStages(): Stage[] {
   const nameMap = loadStageNames();
   const stages: Stage[] = [];
 
+  // 세계편에서 완전히 제외할 맵 ID 목록
+  const SKIP_WORLD_MAPS = new Set<number>([48, 51, 52]);
+
   for (const entry of NORMAL_FILES) {
     const normalPath = path.join(STAGE_NORMAL_DIR, entry.file);
     const settingsList = loadStageNormalFile(normalPath);
@@ -342,6 +345,8 @@ export function loadAllStages(): Stage[] {
       const settings = settingsList[stageId];
 
       const mapId = entry.mapId;
+      // 세계편 파싱 시 제외할 맵이면 건너뜀
+      if (entry.type === "world" && SKIP_WORLD_MAPS.has(mapId)) continue;
       const storyId = STORY_ID;
 
       const code = `${storyId.toString().padStart(3, "0")}-${mapId
@@ -378,6 +383,6 @@ export function loadAllStages(): Stage[] {
       });
     }
   }
-
+  // console.log(stages);
   return stages;
 }
