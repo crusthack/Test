@@ -157,9 +157,15 @@ export default function CatPage({ cats: initialCats }: { cats: Cat[] }) {
 
   const filteredCats = useMemo(() => {
     return cats.filter((cat) => {
-      const matchesSearch =
-        cat.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (cat.Descriptiont ?? "").includes(searchTerm);
+      const matchesSearch = (() => {
+        const normalize = (t: string) => (t || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+        const q = normalize(searchTerm.trim());
+        if (!q) return true;
+        return (
+          normalize(cat.Name).includes(q) ||
+          normalize(cat.Descriptiont ?? "").includes(q)
+        );
+      })();
 
       const matchesRarity =
         selectedRarity.includes("all") || selectedRarity.includes(cat.Rarity);

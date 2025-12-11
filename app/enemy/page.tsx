@@ -1,5 +1,5 @@
 // app/cat/page.tsx
-import { loadEnemiesById, loadAllEnemies } from "@/lib/enemyLoader";
+import { loadAllEnemies } from "@/lib/enemyLoader";
 import EnemyPage from "@/components/enemy/EnemyPage";
 
 export default async function Page() {

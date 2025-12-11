@@ -130,8 +130,11 @@ export default function EnemyPage({enemiess}: {enemiess: Enemy[]}) {
   /* Filter logic with memoization */
   const filteredEnemies = useMemo(() => {
     return enemies.filter((enemy) => {
-      const matchesSearch =
-        enemy.Name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch = (() => {
+        const normalize = (t: string) => (t || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+        const q = normalize(searchTerm);
+        return normalize(enemy.Name).includes(q);
+      })();
 
       const matchesAttribute = (() => {
         if (selectedAttributes.includes("all")) return true;

@@ -35,13 +35,15 @@ export default function StagePage({ stages, enemies }: StagePageProps) {
 	};
 
 	const matchesSearch = (s: _Stage) => {
-		const q = search.trim().toLowerCase();
+		const normalize = (t: string) =>
+			(t || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+		const q = normalize(search.trim());
 		if (!q) return true;
-		if ((s.StageName ?? "").toLowerCase().includes(q)) return true;
-		// check enemy names
+		if (normalize(s.StageName ?? "").includes(q)) return true;
+		// check enemy names (normalize both sides)
 		for (const e of s.Enemies || []) {
 			const en = enemies.find(x => x.Id === e.enemyId);
-			if (en && en.Name && en.Name.toLowerCase().includes(q)) return true;
+			if (en && en.Name && normalize(en.Name).includes(q)) return true;
 		}
 		return false;
 	};
