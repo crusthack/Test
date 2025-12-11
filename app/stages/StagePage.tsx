@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { Stage } from "@/types/stage";
+import type { _Stage } from "@/types/stage";
 import type { Enemy } from "@/types/enemy";
 import StageFilters from "./StageFilters";
 import StageTable from "./StageTable";
@@ -10,12 +10,12 @@ import StageDetailDialog from "./StageDetailDialog";
 import EnemyDetailDialog from "@/components/enemy/EnemyDetailDialog";
 
 interface StagePageProps {
-	stages: Stage[];
+	stages: _Stage[];
 	enemies: Enemy[];
 }
 
 export default function StagePage({ stages, enemies }: StagePageProps) {
-	const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
+	const [selectedStage, setSelectedStage] = useState<_Stage | null>(null);
 	const [selectedEnemy, setSelectedEnemy] = useState<Enemy | null>(null);
 	const [isEnemyDialog, setIsEnemyDialog] = useState(false);
 	const [enemyMultiplier, setEnemyMultiplier] = useState(100);

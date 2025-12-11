@@ -1,12 +1,7 @@
 // lib/stageLoader.ts
 import * as fs from "fs";
 import * as path from "path";
-import { Stage as StageType, StageEnemySpawnData } from "@/types/stage";
-
-// -------------------------------------------------------------
-// 타입 정의
-// -------------------------------------------------------------
-// Use Stage types from types/stage.ts (StageType, StageEnemySpawnData)
+import { StageEnemySpawnData, _Stage, RawEnemyLine } from "@/types/stage";
 
 // -------------------------------------------------------------
 // 경로 상수
@@ -25,18 +20,6 @@ const WORLD_SPACE_DIR = path.join(BASE, "data/Stage/CH/stageSpace");
 
 // 이름 파일
 const STAGE_NAME_FILE = path.join(BASE, "data/StageName.txt");
-
-// CH 스토리 ID
-const STORY_ID = 3;
-
-// 어떤 stageNormal이 어떤 맵 ID를 담당하는지 설정
-const NORMAL_FILES: { file: string; mapId: number; type: "world" | "worldW" }[] = [
-  { file: "stageNormal0.csv",   mapId: 9, type: "world"  }, // 세계편
-  { file: "stageNormal1_0.csv", mapId: 4, type: "worldW" }, // 1장
-  { file: "stageNormal1_1.csv", mapId: 5, type: "worldW" }, // 2장
-  { file: "stageNormal1_2.csv", mapId: 6, type: "worldW" }, // 3장
-];
-
 // -------------------------------------------------------------
 // 유틸
 // -------------------------------------------------------------
@@ -45,14 +28,18 @@ const toInt = (s: string, def = 0) => {
   const n = parseInt(safeTrim(s), 10);
   return Number.isNaN(n) ? def : n;
 };
-
 // -------------------------------------------------------------
-// StageName.txt 로딩
-//   => "003-009-000  한국" 형태 전부 Map<코드, 이름> 으로 저장
+// StageName.txt 를 계층 구조로 파싱해서 Story -> Map -> Stage 배열을 생성
+// 반환 형식:
+// [ { storyId, name?, maps: [ { mapId, name?, stages: [ { stageId, name? } ] } ] } ]
 // -------------------------------------------------------------
-function loadStageNames(): Map<string, string> {
+export function loadStages(): _Stage[] {
   const raw = fs.readFileSync(STAGE_NAME_FILE, "utf8").replace(/\r/g, "");
-  const map = new Map<string, string>();
+
+  // maps to store names
+  const storyNames = new Map<number, string>();
+  const mapNames = new Map<number, Map<number, string>>();
+  const stageNames = new Map<number, Map<number, Map<number, string>>>();
 
   for (const line of raw.split("\n")) {
     const pure = safeTrim(line);
@@ -61,230 +48,145 @@ function loadStageNames(): Map<string, string> {
     const parts = pure.split(/\s+/);
     if (parts.length < 2) continue;
 
-    const code = parts[0];              // "003-009-000"
-    const name = parts.slice(1).join(" "); // 나머지 전부 이름
+    const code = parts[0];
+    const name = parts.slice(1).join(" ");
+    const codeParts = code.split("-");
+    if (codeParts.length < 1) continue;
 
-    // 코드 형식만 간단히 검증
-    if (!/^\d{3}-\d{3}(-\d{3})?$/.test(code)) continue;
+    const storyId = Number(codeParts[0]);
+    if (Number.isNaN(storyId)) continue;
 
-    map.set(code, name);
+    if (codeParts.length === 1) {
+      storyNames.set(storyId, name);
+      continue;
+    }
+
+    const mapId = Number(codeParts[1]);
+    if (Number.isNaN(mapId)) continue;
+
+    if (!mapNames.has(storyId)) mapNames.set(storyId, new Map());
+    if (codeParts.length === 2) {
+      mapNames.get(storyId)!.set(mapId, name);
+      continue;
+    }
+
+    const stageId = Number(codeParts[2]);
+    if (Number.isNaN(stageId)) continue;
+
+    if (!stageNames.has(storyId)) stageNames.set(storyId, new Map());
+    const mapStage = stageNames.get(storyId)!;
+    if (!mapStage.has(mapId)) mapStage.set(mapId, new Map());
+    mapStage.get(mapId)!.set(stageId, name);
   }
 
-  return map;
+  const out: _Stage[] = [];
+  const ALLOWED_STORIES = new Set<number>([3, 0, 13, 34]);
+
+  for (const [storyId, maps] of stageNames.entries()) {
+    if (!ALLOWED_STORIES.has(storyId)) continue;
+    const storyName = storyNames.get(storyId) ?? "";
+    for (const [mapId, stagesMap] of maps.entries()) {
+      const mapName = mapNames.get(storyId)?.get(mapId) ?? "";
+      for (const [stageId, stageName] of stagesMap.entries()) {
+        out.push({
+          StoryId: storyId,
+          MapId: mapId,
+          StageId: stageId,
+          StoryName: storyName,
+          MapName: mapName,
+          StageName: stageName,
+          Enemies: loadStageEnemyInfo(storyId, mapId, stageId),
+          Energy: loadEnergyInfo(storyId, mapId, stageId),
+        });
+      }
+    }
+  }
+  for (const s of out) {
+    if (s.Energy !== 0) {
+      // console.log(s);
+    }
+  }
+  return out.filter(s => s.Energy > 0);
 }
 
-// -------------------------------------------------------------
-// stageNormal*.csv 읽기
-//   각 줄에서 숫자 6개를 Settings로 사용
-// -------------------------------------------------------------
-function loadStageNormalFile(filePath: string): number[][] {
-  if (!fs.existsSync(filePath)) return [];
+function loadEnergyInfo(StoryId: number, MapId: number, StageId: number): number {
+  let filePath = "";
+  if (StoryId === 3) { // 세계편, 미래편, 우주편
+    if (MapId === 9) { // 세계편
+      filePath = path.join(STAGE_NORMAL_DIR, "stageNormal0.csv");
+    }
+    else if ([3, 4, 5].includes(MapId)) { // 미래편
+      filePath = path.join(STAGE_NORMAL_DIR, `stageNormal1_${MapId - 3}.csv`);
+    }
+    else if ([6, 7, 8].includes(MapId)) { // 우주편
+      filePath = path.join(STAGE_NORMAL_DIR, `stageNormal1_${MapId - 6}.csv`);
+    }
+    else {
+      return 0;
+    }
+  }
+  if (filePath === "" || !fs.existsSync(filePath)) {
+    return 0;
+  }
 
   const raw = fs.readFileSync(filePath, "utf8").replace(/\r/g, "");
-  const out: number[][] = [];
-
-  for (const line of raw.split("\n")) {
-    const pure = safeTrim(line.split("//")[0]);
-    if (!pure) continue;
-
-    const parts = pure.split(",").map((x) => safeTrim(x)).filter((x) => x);
-    if (parts.length < 6) continue; // 헤더(-1,-1,-1 등) 스킵
-
-    out.push(parts.slice(0, 6).map((v) => toInt(v, 0)));
+  const lines = raw.split("\n");
+  if (lines.length <= StageId) {
+    return 0;
   }
-
-  return out;
+  const line = lines[StageId + 2]; // 헤더 2줄 스킵
+  const parts = line.split(",");
+  if (parts.length === 0) {
+    return 0;
+  }
+  const energy = Number(parts[0]);
+  if (Number.isNaN(energy)) {
+    return 0;
+  }
+  return energy;
 }
 
-// -------------------------------------------------------------
-// 세계편: data/Stage/CH/stage/stageXX.csv 파싱
-//   - 1줄 헤더(9개 이상 값)
-//   - 이후 적 라인(최소 9개 값)
-//   - 10번째 값이 없으면 배율은 100으로 처리
-// -------------------------------------------------------------
-type RawEnemyLine = {
-  Raw: number[];
-  EnemyId: number;
-  Amount: number;
-  SpawnTime: number;
-  RespawnMin: number;
-  RespawnMax: number;
-  SpawnCondition: number;
-  MinLayer: number;
-  MaxLayer: number;
-  KillCount: number;
-  Magnification: number;
-};
-
-function parseWorldStageCsv(stageId: number): {
-  header: {
-    length: number;
-    castleHealth: number;
-    minSpawn: number;
-    maxSpawn: number;
-    background: number;
-    maxUnit: number;
-    castleId: number;
-    timeLimit: number;
-    bossGuard: boolean;
-  };
-  enemies: RawEnemyLine[];
-} {
-  const file = path.join(WORLD_STAGE_DIR, `stage${stageId.toString().padStart(2, "0")}.csv`);
-
-  const defaultHeader = {
-    length: 3000,
-    castleHealth: 60000,
-    minSpawn: 1,
-    maxSpawn: 1,
-    background: 0,
-    maxUnit: 8,
-    castleId: 0,
-    timeLimit: 0,
-    bossGuard: false,
-  };
-
-  if (!fs.existsSync(file)) {
-    return { header: defaultHeader, enemies: [] };
+function loadStageEnemyInfo(StoryId: number, MapId: number, StageId: number): StageEnemySpawnData[] {
+  let filePath = "";
+  if (StoryId === 3) { // 세계편, 미래편, 우주편
+    if (MapId === 9) { // 세계편
+      filePath = path.join(WORLD_STAGE_DIR, `stage${StageId.toString().padStart(2, "0")}.csv`);
+    }
+    else if ([3, 4, 5].includes(MapId)) { // 미래편
+      filePath = path.join(WORLD_W_STAGE_DIR,
+        `stageW${(MapId + 1).toString().padStart(2, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
+    }
+    else if ([6, 7, 8].includes(MapId)) { // 우주편
+      filePath = path.join(WORLD_SPACE_DIR,
+        `stageSpace${(MapId + 1).toString().padStart(2, "0")}_${StageId.toString().padStart(2, "0")}.csv`);
+    }
+    else {
+      return [];
+    }
   }
-
-  const raw = fs.readFileSync(file, "utf8").replace(/\r/g, "");
+  if (filePath === "" || !fs.existsSync(filePath)) {
+    if(!fs.existsSync(filePath)){
+      // console.log(`File not found: ${StoryId}-${MapId}-${StageId}`);
+    }
+    return [];
+  }
+  
+  const raw = fs.readFileSync(filePath, "utf8").replace(/\r/g, "");
   const lines = raw.split("\n");
-
-  let header = defaultHeader;
-  let readHeader = false;
   const enemies: RawEnemyLine[] = [];
 
-  for (const line of lines) {
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
     const pure = safeTrim(line.split("//")[0]);
     if (!pure || !pure.includes(",")) continue;
 
     const parts = pure.split(",").map((x) => safeTrim(x));
     const nums = parts.map((x) => toInt(x, 0));
-
-    if (!readHeader) {
-      // 헤더: 최소 9개 있다고 보고 처리
-      header = {
-        length: nums[0] ?? defaultHeader.length,
-        castleHealth: nums[1] ?? defaultHeader.castleHealth,
-        minSpawn: nums[2] ?? defaultHeader.minSpawn,
-        maxSpawn: nums[3] ?? defaultHeader.maxSpawn,
-        background: nums[4] ?? defaultHeader.background,
-        maxUnit: nums[5] ?? defaultHeader.maxUnit,
-        castleId: nums[6] ?? defaultHeader.castleId,
-        timeLimit: nums[7] ?? defaultHeader.timeLimit,
-        bossGuard: (nums[8] ?? 0) === 1,
-      };
-      readHeader = true;
-      continue;
-    }
-
-    if (pure.startsWith("0,")) break;
-
-    while (nums.length < 9) nums.push(0);
-
-    const magnification = nums.length > 9 ? nums[9] : 100; // 추가 값이 없으면 100%
-
-    enemies.push({
-      Raw: nums.slice(),
-      EnemyId: nums[0],
-      Amount: nums[1],
-      SpawnTime: nums[2] * 2,
-      RespawnMin: nums[3] * 2,
-      RespawnMax: nums[4] * 2,
-      SpawnCondition: nums[5],
-      MinLayer: nums[6],
-      MaxLayer: nums[7],
-      KillCount: nums[8],
-      Magnification: magnification,
-    });
-  }
-
-  return { header, enemies };
-}
-
-// -------------------------------------------------------------
-// ItF 계열: data/Stage/CH/stageW/stageWMM_SS.csv 파싱
-//   - 1줄 헤더(10개 이상 값)
-//   - 이후 적 라인(최소 10개 값)
-//   - 10번째 값(인덱스 9)는 배율 정보
-// -------------------------------------------------------------
-function parseWorldWStageCsv(mapId: number, stageId: number): {
-  header: {
-    length: number;
-    castleHealth: number;
-    minSpawn: number;
-    maxSpawn: number;
-    background: number;
-    maxUnit: number;
-    castleId: number;
-    timeLimit: number;
-    bossGuard: boolean;
-  };
-  enemies: RawEnemyLine[];
-} {
-  const file = path.join(
-    WORLD_W_STAGE_DIR,
-    `stageW${mapId.toString().padStart(2, "0")}_${stageId
-      .toString()
-      .padStart(2, "0")}.csv`
-  );
-
-  const defaultHeader = {
-    length: 3000,
-    castleHealth: 60000,
-    minSpawn: 1,
-    maxSpawn: 1,
-    background: 0,
-    maxUnit: 8,
-    castleId: 0,
-    timeLimit: 0,
-    bossGuard: false,
-  };
-
-  if (!fs.existsSync(file)) {
-    return { header: defaultHeader, enemies: [] };
-  }
-
-  const raw = fs.readFileSync(file, "utf8").replace(/\r/g, "");
-  const lines = raw.split("\n");
-
-  let header = defaultHeader;
-  let readHeader = false;
-  const enemies: RawEnemyLine[] = [];
-
-  for (const line of lines) {
-    const pure = safeTrim(line.split("//")[0]);
-    if (!pure || !pure.includes(",")) continue;
-
-    const parts = pure.split(",").map((x) => safeTrim(x));
-    const nums = parts.map((x) => toInt(x, 0));
-
-    if (!readHeader) {
-      // 예: 4000,4000,1,1,15,5,0,0,0,0
-      while (nums.length < 10) nums.push(0);
-
-      header = {
-        length: nums[0] ?? defaultHeader.length,
-        castleHealth: nums[1] ?? defaultHeader.castleHealth,
-        minSpawn: nums[2] ?? defaultHeader.minSpawn,
-        maxSpawn: nums[3] ?? defaultHeader.maxSpawn,
-        background: nums[4] ?? defaultHeader.background,
-        maxUnit: nums[5] ?? defaultHeader.maxUnit,
-        castleId: nums[6] ?? defaultHeader.castleId,
-        timeLimit: nums[7] ?? defaultHeader.timeLimit,
-        bossGuard: (nums[8] ?? 0) === 1,
-      };
-      readHeader = true;
-      continue;
-    }
 
     if (pure.startsWith("0,")) break;
 
     while (nums.length < 10) nums.push(0);
 
-    const magnification = nums[9]; // 10번째 값 = 배율 정보
-
     enemies.push({
       Raw: nums.slice(),
       EnemyId: nums[0],
@@ -296,228 +198,20 @@ function parseWorldWStageCsv(mapId: number, stageId: number): {
       MinLayer: nums[6],
       MaxLayer: nums[7],
       KillCount: nums[8],
-      Magnification: magnification,
+      Magnification: nums[9],
     });
   }
 
-  return { header, enemies };
-}
-
-// -------------------------------------------------------------
-// 메인: 전체 스테이지 로드
-//   - stageNormal0 + 세계편 stage/*.csv
-//   - stageNormal1_0/1_1/1_2 + stageW/*.csv
-// -------------------------------------------------------------
-export function loadAllStages(): StageType[] {
-  const nameMap = loadStageNames();
-  const stages: StageType[] = [];
-
-  // 세계편에서 완전히 제외할 맵 ID 목록
-  const SKIP_WORLD_MAPS = new Set<number>([48, 51, 52]);
-
-  for (const entry of NORMAL_FILES) {
-    const normalPath = path.join(STAGE_NORMAL_DIR, entry.file);
-    const settingsList = loadStageNormalFile(normalPath);
-
-    for (let stageId = 0; stageId < settingsList.length; stageId++) {
-      const settings = settingsList[stageId];
-
-      const mapId = entry.mapId;
-      // 세계편 파싱 시 제외할 맵이면 건너뜀
-      if (entry.type === "world" && SKIP_WORLD_MAPS.has(mapId)) continue;
-      const storyId = STORY_ID;
-
-      const code = `${storyId.toString().padStart(3, "0")}-${mapId
-        .toString()
-        .padStart(3, "0")}-${stageId.toString().padStart(3, "0")}`;
-
-      const name = nameMap.get(code) ?? `Stage ${code}`;
-
-      const parsed = entry.type === "world" ? parseWorldStageCsv(stageId) : parseWorldWStageCsv(mapId, stageId);
-
-      // determine mapStage for ItF (worldW) maps: mapId 4->1, 5->2, 6->3
-      let mapStageVal: StageType['mapStage'] | undefined = undefined;
-      if (entry.type === "worldW") {
-        if (mapId === 4) mapStageVal = "1";
-        else if (mapId === 5) mapStageVal = "2";
-        else if (mapId === 6) mapStageVal = "3";
-      }
-
-      // convert parsed enemies to StageEnemySpawnData[] (preserve enemyId and magnification)
-      const enemiesConverted: StageEnemySpawnData[] = (parsed.enemies || []).map((e) => {
-        const triggerType: StageEnemySpawnData['triggerType'] = e.SpawnCondition && e.SpawnCondition > 0 ? 'baseHp' : 'time';
-        const triggerValue = triggerType === 'baseHp' ? e.SpawnCondition : Math.floor(e.SpawnTime / 2);
-        return {
-          enemyId: e.EnemyId,
-          magnification: e.Magnification,
-          name: `Enemy ${e.EnemyId}`,
-          nameKo: '',
-          triggerType,
-          triggerValue,
-        } as StageEnemySpawnData;
-      });
-
-      // map mapId -> mapType
-      const mapType: StageType['mapType'] = mapId === 9 ? '세계편' : [3, 4, 5, 6].includes(mapId) ? '미래편' : '레전드 스토리 0';
-
-      const idNum = Number(`${storyId.toString().padStart(3, '0')}${mapId.toString().padStart(3, '0')}${stageId.toString().padStart(3, '0')}`);
-
-      stages.push({
-        id: idNum,
-        code,
-        mapId,
-        stageId,
-        name,
-        nameKo: name,
-        difficulty: '',
-        enemies: enemiesConverted,
-        baseHp: parsed.header.castleHealth,
-        deployLimit: settings && settings.length > 0 ? settings[0] : 0,
-        energy: settings && settings.length > 0 ? settings[0] : undefined,
-        time: parsed.header.timeLimit > 0 ? parsed.header.timeLimit : undefined,
-        mapType,
-        mapStage: mapStageVal,
-      });
-    }
-  }
-  // 추가: 우주편(stageSpace) 디렉토리 스캔 및 로드
-  if (fs.existsSync(WORLD_SPACE_DIR)) {
-    try {
-      const files = fs.readdirSync(WORLD_SPACE_DIR).filter((n) => /^stageSpace\d{2}_\d{2}\.csv$/.test(n));
-      for (const fname of files) {
-        const m = fname.match(/^stageSpace(\d{2})_(\d{2})\.csv$/);
-        if (!m) continue;
-        const mapId = Number(m[1]);
-        const stageId = Number(m[2]);
-
-        const code = `${STORY_ID.toString().padStart(3, '0')}-${mapId.toString().padStart(3, '0')}-${stageId.toString().padStart(3, '0')}`;
-        const name = nameMap.get(code) ?? `Stage ${code}`;
-
-        const parsed = parseSpaceStageCsv(mapId, stageId);
-
-        const enemiesConverted: StageEnemySpawnData[] = (parsed.enemies || []).map((e) => {
-          const triggerType: StageEnemySpawnData['triggerType'] = e.SpawnCondition && e.SpawnCondition > 0 ? 'baseHp' : 'time';
-          const triggerValue = triggerType === 'baseHp' ? e.SpawnCondition : Math.floor(e.SpawnTime / 2);
-          return {
-            enemyId: e.EnemyId,
-            magnification: e.Magnification,
-            name: `Enemy ${e.EnemyId}`,
-            nameKo: '',
-            triggerType,
-            triggerValue,
-          } as StageEnemySpawnData;
-        });
-
-        stages.push({
-          id: Number(`${STORY_ID.toString().padStart(3,'0')}${mapId.toString().padStart(3,'0')}${stageId.toString().padStart(3,'0')}`),
-          code,
-          mapId,
-          stageId,
-          name,
-          nameKo: name,
-          difficulty: '',
-          enemies: enemiesConverted,
-          baseHp: parsed.header.castleHealth,
-          deployLimit: 0,
-          energy: undefined,
-          time: parsed.header.timeLimit > 0 ? parsed.header.timeLimit : undefined,
-          mapType: '우주편',
-          mapStage: undefined,
-        });
-      }
-    } catch (err) {
-      // ignore
-    }
-  }
-
-  // console.log(stages);
-  return stages;
-}
-
-// -------------------------------------------------------------
-// 우주편: data/Stage/CH/stageSpace/stageSpaceMM_SS.csv 파싱
-//  - 동일하게 1줄 헤더(10개 이상 값) + 적 라인(최소 10개)
-// -------------------------------------------------------------
-function parseSpaceStageCsv(mapId: number, stageId: number): {
-  header: {
-    length: number;
-    castleHealth: number;
-    minSpawn: number;
-    maxSpawn: number;
-    background: number;
-    maxUnit: number;
-    castleId: number;
-    timeLimit: number;
-    bossGuard: boolean;
-  };
-  enemies: RawEnemyLine[];
-} {
-  const file = path.join(WORLD_SPACE_DIR, `stageSpace${mapId.toString().padStart(2, "0")}_${stageId.toString().padStart(2, "0")}.csv`);
-
-  const defaultHeader = {
-    length: 3000,
-    castleHealth: 60000,
-    minSpawn: 1,
-    maxSpawn: 1,
-    background: 0,
-    maxUnit: 8,
-    castleId: 0,
-    timeLimit: 0,
-    bossGuard: false,
-  };
-
-  if (!fs.existsSync(file)) return { header: defaultHeader, enemies: [] };
-
-  const raw = fs.readFileSync(file, "utf8").replace(/\r/g, "");
-  const lines = raw.split("\n");
-
-  let header = defaultHeader;
-  let readHeader = false;
-  const enemies: RawEnemyLine[] = [];
-
-  for (const line of lines) {
-    const pure = safeTrim(line.split("//")[0]);
-    if (!pure || !pure.includes(",")) continue;
-
-    const parts = pure.split(",").map((x) => safeTrim(x));
-    const nums = parts.map((x) => toInt(x, 0));
-
-    if (!readHeader) {
-      while (nums.length < 10) nums.push(0);
-      header = {
-        length: nums[0] ?? defaultHeader.length,
-        castleHealth: nums[1] ?? defaultHeader.castleHealth,
-        minSpawn: nums[2] ?? defaultHeader.minSpawn,
-        maxSpawn: nums[3] ?? defaultHeader.maxSpawn,
-        background: nums[4] ?? defaultHeader.background,
-        maxUnit: nums[5] ?? defaultHeader.maxUnit,
-        castleId: nums[6] ?? defaultHeader.castleId,
-        timeLimit: nums[7] ?? defaultHeader.timeLimit,
-        bossGuard: (nums[8] ?? 0) === 1,
-      };
-      readHeader = true;
-      continue;
-    }
-
-    if (pure.startsWith("0,")) break;
-
-    while (nums.length < 10) nums.push(0);
-    const magnification = nums[9];
-
-    enemies.push({
-      Raw: nums.slice(),
-      EnemyId: nums[0],
-      Amount: nums[1],
-      SpawnTime: nums[2] * 2,
-      RespawnMin: nums[3] * 2,
-      RespawnMax: nums[4] * 2,
-      SpawnCondition: nums[5],
-      MinLayer: nums[6],
-      MaxLayer: nums[7],
-      KillCount: nums[8],
-      Magnification: magnification,
-    });
-  }
-
-  return { header, enemies };
+  return enemies.map((e) => {
+    const triggerType: StageEnemySpawnData['triggerType'] = e.SpawnCondition && e.SpawnCondition > 0 ? 'baseHp' : 'time';
+    const triggerValue = triggerType === 'baseHp' ? e.SpawnCondition : Math.floor(e.SpawnTime / 2);
+    return {
+      enemyId: e.EnemyId,
+      magnification: e.Magnification,
+      name: `Enemy ${e.EnemyId}`,
+      nameKo: '',
+      triggerType,
+      triggerValue,
+    } as StageEnemySpawnData;
+  });
 }

@@ -1,20 +1,3 @@
-export interface Stage {
-  id: number;
-  code?: string;
-  mapId?: number;
-  stageId: number;
-  name: string;
-  nameKo?: string;
-  difficulty?: string;
-  enemies: StageEnemySpawnData[];
-  baseHp?: number;
-  deployLimit?: number; // 통솔력
-  energy?: number; // 스테이지 진입 통솔력
-  time?: number; // 스테이지 제한 시간 (초)
-  mapType: '세계편' | '미래편' | '우주편' | '마계편' | '레전드 스토리' | '신 레전드 스토리' | '레전드 스토리 0';
-  mapStage?: '1' | '2' | '3' | '4'; // n장 정보, 레전드스토리에서는 n성으로 사용
-}
-
 export interface StageEnemySpawnData {
   enemyId?: number;
   name?: string;
@@ -29,6 +12,20 @@ export interface StageEnemySpawnData {
     star4: number;
   };
 }
+
+export type RawEnemyLine = {
+  Raw: number[];
+  EnemyId: number;
+  Amount: number;
+  SpawnTime: number;
+  RespawnMin: number;
+  RespawnMax: number;
+  SpawnCondition: number;
+  MinLayer: number;
+  MaxLayer: number;
+  KillCount: number;
+  Magnification: number;
+};
 
 // 세계편, 미래편, 우주편, 마계편, 레전드 스토리, 신 레전드 스토리, 레전드 스토리 0만 처리
 // 세계편은 1 2 3장 구분 없이 배율만 바뀜
@@ -54,11 +51,15 @@ export interface StageEnemySpawnData {
 // enemyID, number, spawn_0, respawn_0, respawn_1, castle_0, layer_0, layer_1, boss, multiple, spawn_1, castle_1, group, mult_atk, kill_count
 
 
-interface _Stage{
-  StoryId: number;  // Normal: 3, Legend: 0, NewLegend: 13, Legend0: 34
-  MapId: number;    // Normal: 3(세계편),4(미래편1장),5(미래편2장),6(미래편3장),7(우주편1장),8(우주편2장),9(우주편3장)
+export interface _Stage{
+  StoryId: number;  // 세계편: 003, 레전드 스테이지: 000, 신 레전드: 13, 레전드 스토리 0: 34
+  MapId: number;    // 세계편: 미래편 003 004 005 우주편 006 007 008 세계편 009 세계좀비 000 001 002 미래좀비 010 012 013 마계편 014 우주좀비 015 016 017
   // , Legend: 0~, NewLegend:0~, Legend0:0~
   StageId: number;  // 0~
+  StoryName: string;
   MapName: string; // 맵 이름 (세계편, 미래편 1장, 전설의 시작...)
   StageName: string; // 스테이지 이름
+
+  Enemies: StageEnemySpawnData[];
+  Energy: number;
 }
