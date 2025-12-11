@@ -10,6 +10,7 @@ import UnifiedFiltersPanel from "@/components/common/UnifiedFiltersPanel";
 
 const FILTER_ATTRIBUTES_OPTIONS = [
   { value: "all", label: "전체", color: "gray" },
+  { value: "None", label: "없음", color: "gray" },
   { value: "Red", label: "빨간적", color: "red" },
   { value: "Floating", label: "떠있는적", color: "green" },
   { value: "Black", label: "검은적", color: "black" },
@@ -24,6 +25,7 @@ const FILTER_ATTRIBUTES_OPTIONS = [
 
 const FILTER_EFFECTS_OPTIONS = [
   { group: "1", value: "all", label: "전체" },
+  { group: "1", value: "None", label: "없음" },
   { group: "1", value: "Slow", label: "느리게 한다" },
   { group: "1", value: "Stop", label: "멈춘다" },
   { group: "1", value: "Knockback", label: "날려버린다" },
@@ -37,6 +39,7 @@ const FILTER_EFFECTS_OPTIONS = [
 
 const FILTER_ABILITIES_OPTIONS = [
   { group: "1", value: "all", label: "전체" },
+  { group: "1", value: "None", label: "없음" },
   { group: "1", value: "AtkUp", label: "공격력 업" },
   { group: "1", value: "LETHAL", label: "살아남는다" },
   { group: "1", value: "BaseDestroyer", label: "성 파괴가 특기" },
@@ -130,23 +133,65 @@ export default function EnemyPage({enemiess}: {enemiess: Enemy[]}) {
       const matchesSearch =
         enemy.Name.toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesAttribute =
-        selectedAttributes.includes("all") ||
-        (attributeFilterMode === "OR"
+      const matchesAttribute = (() => {
+        if (selectedAttributes.includes("all")) return true;
+        const hasNone = selectedAttributes.includes("None");
+        const selectedWithoutNone = selectedAttributes.filter((a) => a !== "None");
+
+        if (hasNone) {
+          if (attributeFilterMode === "OR") {
+            return (
+              (Array.isArray(enemy.Targets) ? enemy.Targets.length === 0 : true) ||
+              (selectedWithoutNone.length > 0 && selectedWithoutNone.some((v) => enemy.Targets.includes(v as any)))
+            );
+          }
+          return selectedWithoutNone.length === 0 && (Array.isArray(enemy.Targets) ? enemy.Targets.length === 0 : true);
+        }
+
+        return attributeFilterMode === "OR"
           ? selectedAttributes.some((v) => enemy.Targets.includes(v as any))
-          : selectedAttributes.every((v) => enemy.Targets.includes(v as any)));
+          : selectedAttributes.every((v) => enemy.Targets.includes(v as any));
+      })();
 
-      const matchesEffect =
-        selectedEffects.includes("all") ||
-        (effectFilterMode === "OR"
+      const matchesEffect = (() => {
+        if (selectedEffects.includes("all")) return true;
+        const hasNone = selectedEffects.includes("None");
+        const selectedWithoutNone = selectedEffects.filter((a) => a !== "None");
+
+        if (hasNone) {
+          if (effectFilterMode === "OR") {
+            return (
+              (Array.isArray(enemy.Affects) ? enemy.Affects.length === 0 : true) ||
+              (selectedWithoutNone.length > 0 && selectedWithoutNone.some((v) => enemy.Affects.includes(v as any)))
+            );
+          }
+          return selectedWithoutNone.length === 0 && (Array.isArray(enemy.Affects) ? enemy.Affects.length === 0 : true);
+        }
+
+        return effectFilterMode === "OR"
           ? selectedEffects.some((v) => enemy.Affects.includes(v as any))
-          : selectedEffects.every((v) => enemy.Affects.includes(v as any)));
+          : selectedEffects.every((v) => enemy.Affects.includes(v as any));
+      })();
 
-      const matchesAbility =
-        selectedAbilities.includes("all") ||
-        (abilityFilterMode === "OR"
+      const matchesAbility = (() => {
+        if (selectedAbilities.includes("all")) return true;
+        const hasNone = selectedAbilities.includes("None");
+        const selectedWithoutNone = selectedAbilities.filter((a) => a !== "None");
+
+        if (hasNone) {
+          if (abilityFilterMode === "OR") {
+            return (
+              (Array.isArray(enemy.Abilities) ? enemy.Abilities.length === 0 : true) ||
+              (selectedWithoutNone.length > 0 && selectedWithoutNone.some((v) => enemy.Abilities.includes(v as any)))
+            );
+          }
+          return selectedWithoutNone.length === 0 && (Array.isArray(enemy.Abilities) ? enemy.Abilities.length === 0 : true);
+        }
+
+        return abilityFilterMode === "OR"
           ? selectedAbilities.some((v) => enemy.Abilities.includes(v as any))
-          : selectedAbilities.every((v) => enemy.Abilities.includes(v as any)));
+          : selectedAbilities.every((v) => enemy.Abilities.includes(v as any));
+      })();
 
       const matchesAttackType =
         selectedAttackTypes.includes("all") ||

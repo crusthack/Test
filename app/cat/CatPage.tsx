@@ -19,6 +19,7 @@ const FILTER_RARITY_OPTIONS = [
 
 const FILTER_TARGET_OPTIONS = [
   { value: "all", label: "전체", color: "gray" as const },
+  { value: "None", label: "없음", color: "gray" as const },
   { value: "Red", label: "빨간적", color: "red" as const },
   { value: "Floating", label: "떠있는적", color: "green" as const },
   { value: "Black", label: "검은적", color: "black" as const },
@@ -33,6 +34,7 @@ const FILTER_TARGET_OPTIONS = [
 
 const FILTER_EFFECT_OPTIONS = [
   { group: "1", value: "all", label: "전체" },
+  { group: "1", value: "None", label: "없음" },
   { group: "1", value: "Slow", label: "느리게 한다" },
   { group: "1", value: "Stop", label: "멈춘다" },
   { group: "1", value: "Knockback", label: "날려버린다" },
@@ -49,25 +51,25 @@ const FILTER_EFFECT_OPTIONS = [
 
 const FILTER_ABILITY_OPTIONS = [
   { group: "1", value: "all", label: "전체" },
-  { group: "1", value: "none", label: "없음" },
+  { group: "1", value: "None", label: "없음" },
   { group: "1", value: "AtkUp", label: "공격력 업" },
   { group: "1", value: "LETHAL", label: "살아남는다" },
   { group: "1", value: "BaseDestroyer", label: "성 파괴가 특기" },
-  { group: "2", value: "Critical", label: "크리티컬" },
+  { group: "1", value: "Critical", label: "크리티컬" },
+  { group: "1", value: "StrickAttack", label: "혼신의 일격" },
+  { group: "1", value: "Bounty", label: "격파시 머니 up" },
+  { group: "1", value: "WaveBlocker", label: "파동삭제" },
+  { group: "1", value: "Metallic", label: "메탈" },
   { group: "2", value: "BarrierBreak", label: "베리어 브레이커" },
   { group: "2", value: "ShieldBreak", label: "쉴드 브레이커" },
-  { group: "2", value: "StrickAttack", label: "혼신의 일격" },
-  { group: "2", value: "Bounty", label: "격파시 머니 up" },
-  { group: "2", value: "Metallic", label: "메탈" },
-  { group: "2", value: "WaveBlocker", label: "파동삭제" },
-  { group: "3", value: "MiniWave", label: "소파동" },
-  { group: "3", value: "Wave", label: "파동 공격" },
-  { group: "3", value: "MiniVolcano", label: "소열파" },
-  { group: "3", value: "Volcano", label: "열파 공격" },
-  { group: "3", value: "VolcanoCounter", label: "열파 카운터" },
-  { group: "3", value: "Blast", label: "폭파 공격" },
-  { group: "3", value: "WaveBlocker", label: "파동스토퍼" },
-  { group: "3", value: "Summon", label: "소환" },
+  { group: "2", value: "MiniWave", label: "소파동" },
+  { group: "2", value: "Wave", label: "파동 공격" },
+  { group: "2", value: "MiniVolcano", label: "소열파" },
+  { group: "2", value: "Volcano", label: "열파 공격" },
+  { group: "2", value: "Blast", label: "폭파 공격" },
+  { group: "2", value: "WaveBlocker", label: "파동스토퍼" },
+  { group: "2", value: "VolcanoCounter", label: "열파 카운터" },
+  { group: "2", value: "Summon", label: "소환" },
   { group: "4", value: "ColosusSlayer", label: "초생명체 특효" },
   { group: "4", value: "BehemothSlayer", label: "초수 특효" },
   { group: "4", value: "SageHunter", label: "초현자 특효" },
@@ -162,23 +164,68 @@ export default function CatPage({ cats: initialCats }: { cats: Cat[] }) {
       const matchesRarity =
         selectedRarity.includes("all") || selectedRarity.includes(cat.Rarity);
 
-      const matchesTarget =
-        selectedTargets.includes("all") ||
-        (targetFilterMode === "OR"
+      const matchesTarget = (() => {
+        if (selectedTargets.includes("all")) return true;
+        const hasNone = selectedTargets.includes("None");
+        const selectedWithoutNone = selectedTargets.filter((a) => a !== "None");
+
+        if (hasNone) {
+          if (targetFilterMode === "OR") {
+            return (
+              (Array.isArray(cat.Targets) ? cat.Targets.length === 0 : true) ||
+              (selectedWithoutNone.length > 0 && selectedWithoutNone.some((t) => cat.Targets.includes(t as any)))
+            );
+          }
+          return selectedWithoutNone.length === 0 && (Array.isArray(cat.Targets) ? cat.Targets.length === 0 : true);
+        }
+
+        return targetFilterMode === "OR"
           ? selectedTargets.some((t) => cat.Targets.includes(t as any))
-          : selectedTargets.every((t) => cat.Targets.includes(t as any)));
+          : selectedTargets.every((t) => cat.Targets.includes(t as any));
+      })();
 
-      const matchesEffect =
-        selectedEffects.includes("all") ||
-        (effectFilterMode === "OR"
+      const matchesEffect = (() => {
+        if (selectedEffects.includes("all")) return true;
+        const hasNone = selectedEffects.includes("None");
+        const selectedWithoutNone = selectedEffects.filter((a) => a !== "None");
+
+        if (hasNone) {
+          if (effectFilterMode === "OR") {
+            return (
+              (Array.isArray(cat.Affects) ? cat.Affects.length === 0 : true) ||
+              (selectedWithoutNone.length > 0 && selectedWithoutNone.some((e) => cat.Affects.includes(e as any)))
+            );
+          }
+          return selectedWithoutNone.length === 0 && (Array.isArray(cat.Affects) ? cat.Affects.length === 0 : true);
+        }
+
+        return effectFilterMode === "OR"
           ? selectedEffects.some((e) => cat.Affects.includes(e as any))
-          : selectedEffects.every((e) => cat.Affects.includes(e as any)));
+          : selectedEffects.every((e) => cat.Affects.includes(e as any));
+      })();
 
-      const matchesAbility =
-        selectedAbilities.includes("all") ||
-        (abilityFilterMode === "OR"
+      const matchesAbility = (() => {
+        if (selectedAbilities.includes("all")) return true;
+        const hasNone = selectedAbilities.includes("None");
+        const selectedWithoutNone = selectedAbilities.filter((a) => a !== "None");
+
+        if (hasNone) {
+          if (abilityFilterMode === "OR") {
+            // include cats with no abilities OR cats matching any other selected ability
+            return (
+              (Array.isArray(cat.Abilities) ? cat.Abilities.length === 0 : true) ||
+              (selectedWithoutNone.length > 0 && selectedWithoutNone.some((a) => cat.Abilities.includes(a as any)))
+            );
+          }
+          // AND mode: only match if no other ability is selected and the cat has no abilities
+          return selectedWithoutNone.length === 0 && (Array.isArray(cat.Abilities) ? cat.Abilities.length === 0 : true);
+        }
+
+        // Normal behavior when 'None' not selected
+        return abilityFilterMode === "OR"
           ? selectedAbilities.some((a) => cat.Abilities.includes(a as any))
-          : selectedAbilities.every((a) => cat.Abilities.includes(a as any)));
+          : selectedAbilities.every((a) => cat.Abilities.includes(a as any));
+      })();
 
       const matchesAttackType =
         selectedAttackTypes.includes("all") ||
