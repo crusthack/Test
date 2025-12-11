@@ -1,30 +1,29 @@
 export interface StageEnemySpawnData {
-  enemyId?: number;
-  name?: string;
-  nameKo?: string;
-  triggerType: 'time' | 'baseHp';
-  triggerValue: number; // seconds for time, percentage for baseHp
-  magnification?: number;
-  starMultipliers?: {
-    star1: number;
-    star2: number;
-    star3: number;
-    star4: number;
-  };
+  enemyId: number;
+  magnification: number;
+  castleHp: number;
+  timer: number;
 }
+// enemyID, number, spawn_0, respawn_0, respawn_1, castle_0, layer_0, layer_1, boss, multiple, 
+// spawn_1, castle_1, group, mult_atk, kill_count
 
 export type RawEnemyLine = {
   Raw: number[];
   EnemyId: number;
   Amount: number;
-  SpawnTime: number;
-  RespawnMin: number;
-  RespawnMax: number;
-  SpawnCondition: number;
+  spawn_0: number;
+  RespawnMinF: number;
+  RespawnMaxF: number;
+  castle_0: number; // 성체력% 5
   MinLayer: number;
   MaxLayer: number;
-  KillCount: number;
+  IsBoss: number;
   Magnification: number;
+  Spawn_1: number;
+  Castle_1: number;
+  Group: number;
+  Mult_Atk: number;
+  KillCount: number;
 };
 
 // 세계편, 미래편, 우주편, 마계편, 레전드 스토리, 신 레전드 스토리, 레전드 스토리 0만 처리

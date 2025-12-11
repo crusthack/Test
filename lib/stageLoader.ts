@@ -101,11 +101,6 @@ export function loadStages(): _Stage[] {
       }
     }
   }
-  for (const s of out) {
-    if (s.Energy !== 0) {
-      // console.log(s);
-    }
-  }
   return out.filter(s => s.Energy > 0);
 }
 
@@ -165,9 +160,6 @@ function loadStageEnemyInfo(StoryId: number, MapId: number, StageId: number): St
     }
   }
   if (filePath === "" || !fs.existsSync(filePath)) {
-    if(!fs.existsSync(filePath)){
-      // console.log(`File not found: ${StoryId}-${MapId}-${StageId}`);
-    }
     return [];
   }
   
@@ -186,32 +178,35 @@ function loadStageEnemyInfo(StoryId: number, MapId: number, StageId: number): St
     if (pure.startsWith("0,")) break;
 
     while (nums.length < 10) nums.push(0);
-
+    // id, 출현수, 첫등장F, 재등장 최저F, 재등장 최고F, 성체력%, z층최소, z층최대, 킬카운트, 배율
     enemies.push({
       Raw: nums.slice(),
       EnemyId: nums[0],
       Amount: nums[1],
-      SpawnTime: nums[2] * 2,
-      RespawnMin: nums[3] * 2,
-      RespawnMax: nums[4] * 2,
-      SpawnCondition: nums[5],
+      spawn_0: nums[2] * 2,
+      RespawnMinF: nums[3] * 2,
+      RespawnMaxF: nums[4] * 2,
+      castle_0: nums[5],
       MinLayer: nums[6],
       MaxLayer: nums[7],
-      KillCount: nums[8],
+      IsBoss: nums[8],
       Magnification: nums[9],
+      Spawn_1: nums[10] * 2,
+      Castle_1: nums[11],
+      Group: nums[12],
+      Mult_Atk: nums[13],
+      KillCount: nums[14],
     });
   }
 
   return enemies.map((e) => {
-    const triggerType: StageEnemySpawnData['triggerType'] = e.SpawnCondition && e.SpawnCondition > 0 ? 'baseHp' : 'time';
-    const triggerValue = triggerType === 'baseHp' ? e.SpawnCondition : Math.floor(e.SpawnTime / 2);
-    return {
+    const out = {
       enemyId: e.EnemyId,
       magnification: e.Magnification,
-      name: `Enemy ${e.EnemyId}`,
-      nameKo: '',
-      triggerType,
-      triggerValue,
+      castleHp: e.castle_0,
+      timer: e.spawn_0,
     } as StageEnemySpawnData;
+    console.log(out);
+    return out;
   });
 }

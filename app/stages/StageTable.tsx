@@ -83,7 +83,7 @@ export default function StageTable({ stages, enemies, onSelectStage }: StageTabl
 
 											return (
 												<div key={`${id}-${i}`} className="flex flex-col items-center justify-start w-28">
-													<div className="w-20 h-8">
+													<div className="h-10">
 														{en.Image ? (
 															<img src={en.Image} alt={en.Name} className="w-full h-full object-contain rounded bg-white" />
 														) : (
