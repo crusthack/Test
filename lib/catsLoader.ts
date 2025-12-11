@@ -2,12 +2,13 @@ import * as fs from "fs";
 import * as path from "path";
 import { Cat, trait, attackType, affect, ability } from "@/types/cat";
 
-// 경로 설정
-const UNIT_DIR = "./data/cat/unit";                     // 유닛 스탯
-const NAME_FILE = "./data/cat/UnitName.txt";            // 유닛 이름
-const DESC_FILE = "./data/cat/UnitExplanation.txt";     // 유닛 설명
-const RARE_FILE = "./data/cat/unitbuy.csv";             // 유닛 레어도
-const LV_FILE = "./data/cat/unitlevel.csv";             // 유닛 레벨 정보
+// 경로 설정 (절대 경로 사용 — Turbopack의 정적 분석 경고 회피)
+const DATA_ROOT = path.join(process.cwd(), "data", "cat");
+const UNIT_DIR = path.join(DATA_ROOT, "unit");                     // 유닛 스탯
+const NAME_FILE = path.join(DATA_ROOT, "UnitName.txt");            // 유닛 이름
+const DESC_FILE = path.join(DATA_ROOT, "UnitExplanation.txt");     // 유닛 설명
+const RARE_FILE = path.join(DATA_ROOT, "unitbuy.csv");             // 유닛 레어도
+const LV_FILE = path.join(DATA_ROOT, "unitlevel.csv");             // 유닛 레벨 정보
 
 // ──────────────────────────────────────────────
 // 캐시 저장 변수들
@@ -22,6 +23,25 @@ let cachePostFrame: Map<string, number> = new Map(); // key = "id-form"
 // ──────────────────────────────────────────────
 // 유닛 설명 로드 + 캐싱
 // ──────────────────────────────────────────────
+
+// Pre-scan unit directories to avoid dynamic path patterns during build-time
+const unitDirMap: Map<number, string> = new Map();
+if (fs.existsSync(UNIT_DIR)) {
+    try {
+        const entries = fs.readdirSync(UNIT_DIR, { withFileTypes: true })
+            .filter(e => e.isDirectory())
+            .map(e => e.name)
+            .filter(n => /^\d{3}$/.test(n));
+
+        for (const name of entries) {
+            const id = Number(name);
+            if (!Number.isNaN(id)) unitDirMap.set(id, path.join(UNIT_DIR, name));
+        }
+    } catch (err) {
+        // ignore
+    }
+}
+
 function loadDescriptions(): Map<number, string[]> {
     if (cacheDescriptions) return cacheDescriptions;
 
@@ -250,7 +270,12 @@ function loadPostFRame(id: number, form: number, postFrame: number): number {
     const formMap: Record<number, string> = { 1: "f", 2: "c", 3: "s", 4: "u" };
     const c = formMap[form];
 
-    const dir = path.join(UNIT_DIR, id.toString().padStart(3, "0"));
+    const dir = unitDirMap.get(id);
+    if (!dir) {
+        cachePostFrame.set(key, 0);
+        return 0;
+    }
+
     const animPath = path.join(dir, `${id.toString().padStart(3, "0")}_${c}02.maanim`);
 
     if (!fs.existsSync(animPath)) {
@@ -285,7 +310,9 @@ function loadPostFRame(id: number, form: number, postFrame: number): number {
 function loadOneCSV(num: number, form: number, name: string, descMap: Map<number, string[]>): Cat | null {
     const { rarity, maxlevel, maxpluslevel } = loadUnitBuy(num);
 
-    const dir = path.join(UNIT_DIR, num.toString().padStart(3, "0"));
+    const dir = unitDirMap.get(num);
+    if (!dir) return null;
+
     const csvPath = path.join(dir, `unit${num.toString().padStart(3, "0")}.csv`);
 
     if (!fs.existsSync(csvPath)) return null;

@@ -68,9 +68,9 @@ const STORY_ID = 3;
 // 어떤 stageNormal이 어떤 맵 ID를 담당하는지 설정
 const NORMAL_FILES: { file: string; mapId: number; type: "world" | "worldW" }[] = [
   { file: "stageNormal0.csv",   mapId: 9, type: "world"  }, // 세계편
-  { file: "stageNormal1_0.csv", mapId: 3, type: "worldW" }, // 1장
-  { file: "stageNormal1_1.csv", mapId: 4, type: "worldW" }, // 2장
-  { file: "stageNormal1_2.csv", mapId: 5, type: "worldW" }, // 3장
+  { file: "stageNormal1_0.csv", mapId: 4, type: "worldW" }, // 1장
+  { file: "stageNormal1_1.csv", mapId: 5, type: "worldW" }, // 2장
+  { file: "stageNormal1_2.csv", mapId: 6, type: "worldW" }, // 3장
 ];
 
 // -------------------------------------------------------------
