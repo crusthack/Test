@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { Stage } from "@/lib/stageLoader";
+import type { Stage } from "@/types/stage";
 import type { Enemy } from "@/types/enemy";
 import StageFilters from "./StageFilters";
 import StageTable from "./StageTable";
